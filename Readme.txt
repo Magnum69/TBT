@@ -15,5 +15,5 @@ in the interfaces can change at any time!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-Developer: Carsten Gutwenger
-License:   To be decided
+Copyright: Carsten Gutwenger
+License:   BOOST Software License (see License.txt)
