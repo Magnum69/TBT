@@ -7,30 +7,18 @@
 
 namespace tbt
 {
-
+	//! Base class for OpenCL modules.
 	class Module
 	{
-		//cl::CommandQueue m_queue;
-		//cl::Context      m_context;
 		cl::Program      m_program;
 
-		//size_t           m_maxWorkItemSize[3];
-
 	public:
-		//OclModule(cl::CommandQueue queue);
-		Module();
+		Module() { }
 
 		void buildProgramFromSourceRel(const char *progName);
 
-		//cl::Context      getContext()      { return tbt::getContext(); }
-		//cl::CommandQueue getCommandQueue() { return m_queue;   }
-		//cl::Device       getDevice()       { return m_device;  }
 		cl::Program      getProgram()      { return m_program; }
 
-
-		//size_t getMaxWorkItemSize(cl_uint dimindx) const {
-		//	return m_maxWorkItemSize[dimindx];
-		//}
 
 		cl::Kernel createKernel(const char *kernelName) {
 			return cl::Kernel(m_program, kernelName);
@@ -57,7 +45,6 @@ namespace tbt
 			queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(globalWork), localWorkRange, events, ev);
 		}
 
-		//static std::string getExePath();
 		static double getEventTime(cl::Event ev);
 	};
 

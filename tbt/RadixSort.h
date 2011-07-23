@@ -5,7 +5,7 @@
 #include <tbt/Module.h>
 
 
-
+//! Radix-sort module.
 class RadixSort : public tbt::Module
 {
 	cl::Kernel  m_kernelCounting;
