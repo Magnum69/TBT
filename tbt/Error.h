@@ -14,20 +14,20 @@ namespace tbt
 	public:
 		//! The code of an error.
 		enum ErrorCode {
-			errUnknown,                 //!< unknown error.
-			errKernelFileNotFound,      //!< a kernel file could not be found.
-			errKernelCompileError,      //!< error while compiling a kernel program.
-			errFileNotFound,            //!< a file could not be found.
-			errOutOfMemory,             //!< not enough memory available.
-			errProgramCacheError,       //!< an error occurred while trying to cache a kernel binary.
-			errNoOpenCLPlatformFound    //!< no suitable OpenCL platform could be found.
+			ecUnknown,                 //!< unknown error.
+			ecKernelFileNotFound,      //!< a kernel file could not be found.
+			ecKernelCompileError,      //!< error while compiling a kernel program.
+			ecFileNotFound,            //!< a file could not be found.
+			ecOutOfMemory,             //!< not enough memory available.
+			ecProgramCacheError,       //!< an error occurred while trying to cache a kernel binary.
+			ecNoOpenCLPlatformFound    //!< no suitable OpenCL platform could be found.
 		};
 
 		//! Constructs an unknown error.
-		Error() : std::exception(), m_code(errUnknown) { }
+		Error() : std::exception(), m_code(ecUnknown) { }
 
 		//! Constructs an errors with message \a msg and unknown error code.
-		Error(const char *msg) : std::exception(msg), m_code(errUnknown) { }
+		Error(const char *msg) : std::exception(msg), m_code(ecUnknown) { }
 
 		//! Constructs an error with message \a msg and error code \a code.
 		Error(const char *msg, ErrorCode code) : std::exception(msg), m_code(code) { }

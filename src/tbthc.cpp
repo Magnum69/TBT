@@ -74,10 +74,10 @@ namespace tbt {
 		}
 
 		if(deviceType == CL_DEVICE_TYPE_GPU && indexAMD == -1 && indexNvidia == -1)
-			throw Error("No OpenCL platform for GPUs found!", Error::errNoOpenCLPlatformFound);
+			throw Error("No OpenCL platform for GPUs found!", Error::ecNoOpenCLPlatformFound);
 		
 		if(deviceType == CL_DEVICE_TYPE_CPU && indexAMD == -1 && indexIntel == -1)
-			throw Error("No OpenCL platform for CPUs found!", Error::errNoOpenCLPlatformFound);
+			throw Error("No OpenCL platform for CPUs found!", Error::ecNoOpenCLPlatformFound);
 
 		if(deviceType == CL_DEVICE_TYPE_GPU)
 			return platformList[(indexAMD != -1) ? indexAMD : indexNvidia];
@@ -288,7 +288,7 @@ namespace tbt {
 		struct _stat64 stat;
 		int retVal = _fstat64(fh, &stat);
 		if (retVal == -1)
-			throw Error("OclBase::getFileModificationTime: File not found!", Error::errFileNotFound);
+			throw Error("OclBase::getFileModificationTime: File not found!", Error::ecFileNotFound);
 
 		return stat.st_mtime;
 	}
@@ -299,7 +299,7 @@ namespace tbt {
 		struct _stat64 stat;
 		int retVal = _stat64(fileName, &stat);
 		if (retVal == -1)
-			throw Error("OclBase::getFileModificationTime: File not found!", Error::errFileNotFound);
+			throw Error("OclBase::getFileModificationTime: File not found!", Error::ecFileNotFound);
 
 		return stat.st_mtime;
 	}
@@ -356,7 +356,7 @@ namespace tbt {
 	
 							char *buffer = new char[size];
 							if(buffer == 0)
-								throw Error("OclBase::buildProgram: Could not allocate buffer for cached binary file!", Error::errOutOfMemory);
+								throw Error("OclBase::buildProgram: Could not allocate buffer for cached binary file!", Error::ecOutOfMemory);
 
 							size_t bytesRead = fread(buffer, sizeof(char), size, pFile);
 							if(bytesRead < size)
@@ -393,7 +393,7 @@ namespace tbt {
 		if(!sourceFile) {
 			std::string msg("OclBase::buildProgram: Could not read kernel file ");
 			msg.append(sourceName);
-			throw Error(msg.c_str(), Error::errKernelFileNotFound);
+			throw Error(msg.c_str(), Error::ecKernelFileNotFound);
 		}
 
 		string progstr(istreambuf_iterator<char>(sourceFile), (istreambuf_iterator<char>()));
@@ -406,7 +406,7 @@ namespace tbt {
 		} catch(cl::Error err) {
 			cerr << "Compiler error: " << err.what() << "(" << err.err() << ")" << endl;
 			string str =  program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-			throw Error("Could not compile kernels", Error::errKernelCompileError);
+			throw Error("Could not compile kernels", Error::ecKernelCompileError);
 		}
 
 		// cache binary file
@@ -429,13 +429,13 @@ namespace tbt {
 				fclose(pFile);
 
 				if(bytesWritten < size)
-					throw Error("OclBase::buildProgram: Could not write binary file to cache!", Error::errProgramCacheError);
+					throw Error("OclBase::buildProgram: Could not write binary file to cache!", Error::ecProgramCacheError);
 
 				if(writeProgramInfoFile(infoName.c_str(), device) == false)
-					throw Error("OclBase::buildProgram: Could not write info file to cache!", Error::errProgramCacheError);
+					throw Error("OclBase::buildProgram: Could not write info file to cache!", Error::ecProgramCacheError);
 				
 			} else {
-				throw Error("OclBase::buildProgram: Could not cache binary file!", Error::errProgramCacheError);
+				throw Error("OclBase::buildProgram: Could not cache binary file!", Error::ecProgramCacheError);
 			}
 
 			delete [] buffer;
