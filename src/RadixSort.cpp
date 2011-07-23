@@ -56,6 +56,7 @@ namespace tbt
 	bool RadixSort::run(cl::CommandQueue queue, cl_uint *a, cl_uint n)
 	{
 		assureKernelsLoaded();
+		startTimer();
 
 		m_nElements = n;
 		m_numGroups = n / (TOTAL_GROUP_ELEMENTS);
@@ -115,6 +116,8 @@ namespace tbt
 		void *ptr = queue.enqueueMapBuffer(m_buffer_a, CL_TRUE, CL_MAP_READ, 0, m_nElements*sizeof(cl_uint));
 		//m_queue.enqueueReadBuffer(m_buffer_a, CL_TRUE, 0, m_nElements*sizeof(cl_uint), a);
 
+		m_totalTime = readTimer();
+
 		return true;
 	}
 
@@ -166,7 +169,6 @@ namespace tbt
 		enqueue1DRangeKernel(queue, m_kernelPermute, m_numGroups*LOCAL_WORK, LOCAL_WORK, 0, &evKernelPermute);
 
 		queue.finish();
-		//cout << "done." << endl;
 
 		m_tKernelCounting          += getEventTime(evKernelCounting);
 		m_tKernelPrescanSum        += getEventTime(evKernelPrescanSum);

@@ -11,6 +11,8 @@ namespace tbt
 	class Module
 	{
 		static cl::Program s_program;
+		LARGE_INTEGER m_timer;
+
 
 	public:
 		Module() { }
@@ -47,6 +49,9 @@ namespace tbt
 		}
 
 		static double getEventTime(cl::Event ev);
+
+		void startTimer();
+		double readTimer();
 	};
 
 }

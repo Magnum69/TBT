@@ -156,6 +156,8 @@ int main(int argc, char *argv[])
 		cout << "kernel Prescan with Offset: " << radixSort.totalTimeKernelPrescanWithOffset()  << " ms" << endl;
 		cout << "kernel Permute:             " << radixSort.totalTimeKernelPermute()  << " ms" << endl;
 		cout << "total kernel time:          " << radixSort.totalTimeKernels() << " ms" << endl;
+		cout << endl;
+		cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
 
 		if(ok) {
 			cout << "Checking results..." << flush;

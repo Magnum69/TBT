@@ -21,6 +21,22 @@ namespace tbt {
 	}
 
 
+	void Module::startTimer()
+	{
+		QueryPerformanceCounter(&m_timer);
+	}
+
+
+	double Module::readTimer()
+	{
+		LARGE_INTEGER curTimer, frequeny;
+		QueryPerformanceCounter(&curTimer);
+		QueryPerformanceFrequency(&frequeny);
+
+		return 1e3 * double(curTimer.QuadPart - m_timer.QuadPart) / frequeny.QuadPart;
+	}
+
+
 	void Module::buildProgramFromSourceRel(const char *progName)
 	{
 		s_program = Utility::buildProgram(progName);

@@ -37,6 +37,8 @@ namespace tbt
 		double m_tKernelPrescanWithOffset;
 		double m_tKernelPermute;
 
+		double m_totalTime;
+
 	public:
 		RadixSort() { }
 
@@ -51,6 +53,9 @@ namespace tbt
 		double totalTimeKernels() const {
 			return m_tKernelCounting + m_tKernelPrescanSum + m_tKernelPrescan + m_tKernelPrescanWithOffset + m_tKernelPermute;
 		}
+
+		double totalTime() const { return m_totalTime; }
+
 
 	private:
 		void runSingle(cl::CommandQueue queue, cl::Buffer &bufferSrc, cl::Buffer &bufferTgt, cl_uint shift);
