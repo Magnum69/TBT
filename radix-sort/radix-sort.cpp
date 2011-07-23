@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
 		cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
 
-		RadixSort radixSort;
+		tbt::RadixSort radixSort;
 
 		if(outputMode == omVerbose) {
 			cout << "Creating array with " << n << " random unsigned ints..." << flush;

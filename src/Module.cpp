@@ -10,6 +10,9 @@ using namespace std;
 namespace tbt {
 
 
+	cl::Program Module::s_program;
+
+
 	double Module::getEventTime(cl::Event ev)
 	{
 		cl_ulong startTime = ev.getProfilingInfo<CL_PROFILING_COMMAND_START>();
@@ -20,7 +23,7 @@ namespace tbt {
 
 	void Module::buildProgramFromSourceRel(const char *progName)
 	{
-		m_program = Utility::buildProgram(progName);
+		s_program = Utility::buildProgram(progName);
 	}
 
 }

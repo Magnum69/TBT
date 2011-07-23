@@ -10,18 +10,19 @@ namespace tbt
 	//! Base class for OpenCL modules.
 	class Module
 	{
-		cl::Program      m_program;
+		static cl::Program s_program;
 
 	public:
 		Module() { }
 
-		void buildProgramFromSourceRel(const char *progName);
+		static void buildProgramFromSourceRel(const char *progName);
 
-		cl::Program      getProgram()      { return m_program; }
+		static cl::Program getProgram() { return s_program; }
+		static bool isProgramLoaded()  { return s_program() != NULL; }
 
 
-		cl::Kernel createKernel(const char *kernelName) {
-			return cl::Kernel(m_program, kernelName);
+		static cl::Kernel createKernel(const char *kernelName) {
+			return cl::Kernel(s_program, kernelName);
 		}
 
 		template<class T>
