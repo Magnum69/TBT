@@ -26,47 +26,6 @@ void initRandom(cl_uint *a, int n)
 }
 
 
-//bool getPlatform(cl_device_type deviceType, cl::Platform &platform)
-//{
-//	try {
-//		// Get a AMD/GPU and Intel/CPU platform and context.
-//		cl::vector< cl::Platform > platformList;
-//		cl::Platform::get(&platformList);
-//
-//		int indexAMD = -1, indexIntel = -1, indexNvidia = -1;
-//		for(int i = 0; i < (int)platformList.size(); ++i) {
-//			string platformName;
-//			platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformName);
-//			if(platformName == "AMD Accelerated Parallel Processing")
-//				indexAMD = i;
-//			else if(platformName == "Intel(R) OpenCL")
-//				indexIntel = i;
-//			else if(platformName == "NVIDIA CUDA")
-//				indexNvidia = i;
-//		}
-//
-//		if(deviceType == CL_DEVICE_TYPE_GPU && indexAMD == -1 && indexNvidia == -1) {
-//			cerr << "Could neither find AMD nor Nvidia platform!" << endl;
-//			return false;
-//		}
-//		if(deviceType == CL_DEVICE_TYPE_CPU && indexAMD == -1 && indexIntel == -1) {
-//			cerr << "Could neither find AMD nor Intel platform!" << endl;
-//			return false;
-//		}
-//
-//		if(deviceType == CL_DEVICE_TYPE_GPU)
-//			platform = platformList[(indexAMD != -1) ? indexAMD : indexNvidia];
-//		else
-//			platform = (indexIntel != -1) ? platformList[indexIntel] : platformList[indexAMD];
-//		return true;
-//
-//	} catch(cl::Error err) {
-//		cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << endl;
-//		return false;
-//	}
-//}
-
-
 void outputArray(cl_uint *a, cl_uint n)
 {
 	for(cl_uint i = 0; i < n; ++i) {
@@ -101,14 +60,14 @@ int main(int argc, char *argv[])
 	for(int i = 1; i < argc; ++i) {
 		string cmd = argv[i];
 
-		if(cmd == "-h" || cmd == "-help") {
+		if(cmd == "-h" || cmd == "--help") {
 			cout << "Call with: radix-sort options-list" << endl;
 			cout << "\navailable options:" << endl;
 			cout << "\n-n #elements\n  specifies the number of elements to be sorted" << endl;
-			cout << "\n-d device\n  specifies the device used: CPU, GPU" << endl;
-			cout << "\n-quiet\n  generate no output" << endl;
-			cout << "\n-verbose\n  generate detailed output" << endl;
-			cout << "\n-h, -help\n  display this help" << endl;
+			cout << "\n-d, --device {CPU,GPU}\n  specifies the device used: CPU or GPU" << endl;
+			cout << "\n--quiet\n  generate no output" << endl;
+			cout << "\n--verbose\n  generate detailed output" << endl;
+			cout << "\n-h, --help\n  display this help and exit" << endl;
 			return 0;
 
 		} else if (cmd == "-n") {
@@ -118,7 +77,7 @@ int main(int argc, char *argv[])
 			}
 			n = atoi(argv[i]);
 
-		} else if (cmd == "-d") {
+		} else if (cmd == "-d" || cmd == "--device") {
 			if(++i >= argc) {
 				cerr << "Missing argument for option " << cmd << endl;
 				return 1;
@@ -133,11 +92,15 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 
-		} else if (cmd == "-quiet") {
+		} else if (cmd == "--quiet") {
 			outputMode = omQuiet;
 
-		} else if(cmd == "-verbose") {
+		} else if(cmd == "--verbose") {
 			outputMode = omVerbose;
+
+		} else {
+			cerr << "Unknown option: " << cmd << endl;
+			return 1;
 		}
 	}
 	
