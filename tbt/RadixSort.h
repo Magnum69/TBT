@@ -40,20 +40,34 @@ namespace tbt
 		double m_totalTime;
 
 	public:
+		//! Constructs a radix-sort module.
 		RadixSort() { }
 
+		//! Runs radix-sort for array \a a with \a n elements.
 		bool run(cl::CommandQueue queue, cl_uint *a, cl_uint n);
 
+
+		//! Returns total running time of counting kernels (in milliseconds).
 		double totalTimeKernelCounting         () const { return m_tKernelCounting; }
+
+		//! Returns total running time of prescanSum kernels (in milliseconds).
 		double totalTimeKernelPrescanSum       () const { return m_tKernelPrescanSum;  }
+
+		//! Returns total running time of prescan kernels (in milliseconds).
 		double totalTimeKernelPrescan          () const { return m_tKernelPrescan;  }
+
+		//! Returns total running time of prescanWithOffset kernels (in milliseconds).
 		double totalTimeKernelPrescanWithOffset() const { return m_tKernelPrescanWithOffset;  }
+
+		//! Returns total running time of permute kernels (in milliseconds).
 		double totalTimeKernelPermute          () const { return m_tKernelPermute;  }
 
+		//! Returns total running time of all kernels (in milliseconds).
 		double totalTimeKernels() const {
 			return m_tKernelCounting + m_tKernelPrescanSum + m_tKernelPrescan + m_tKernelPrescanWithOffset + m_tKernelPermute;
 		}
 
+		//! Returns total running time (in milliseconds (including data transfer and kernel launch times).
 		double totalTime() const { return m_totalTime; }
 
 
