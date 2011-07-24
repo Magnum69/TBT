@@ -223,7 +223,7 @@ namespace tbt {
 		char c = '\0';
 		string result;
 
-		for(int i = 0; i < str.length(); i++) {
+		for(size_t i = 0; i < str.length(); i++) {
 			char cc = str[i];
 			if(cc == '\t' || cc == '\n' || cc == '\r' || cc == '\b' || cc == '\\' || cc == '/' || cc == ':' || cc == '<' || cc == '>' || cc == '\"' || cc == '|' || cc == '?' || cc == '*')
 				cc = ' ';
