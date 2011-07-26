@@ -10,15 +10,15 @@ namespace tbt
 	//! Base class for OpenCL modules.
 	class Module
 	{
-		static cl::Program s_program;  //!> the OpenCL program of the module.
-		LARGE_INTEGER m_timer;         //!> stores high-performance counter.
+		static cl::Program s_program;  //!< the OpenCL program of the module.
+		LARGE_INTEGER m_timer;         //!< stores high-performance counter.
 
 
 	public:
 		//! Constructs a module.
 		Module() { }
 
-		//! Build the program from sources \a progName, which are relative to path of executable.
+		//! Builds the program from sources \a progName, which are relative to path of executable.
 		/**
 		 * This function reads the OpenCL sources from file \a progName and builds the program.
 		 * It also performs automatic caching of program binaries (if enabled in global options)
