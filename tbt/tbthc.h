@@ -15,63 +15,6 @@
 
 namespace tbt
 {
-	//! Maintenance of global platform and context, as well as some options.
-	class Global
-	{
-		friend cl::Platform getPlatform();
-		friend cl::Context getContext();
-		friend void createContext(cl_device_type deviceType, const cl::Platform &platform);
-		friend void createContext(cl_device_type deviceType);
-
-		static cl::Platform s_platform;  //!< the global OpenCL platform we use.
-		static cl::Context s_context;    //!< the global OpenCL context we use.
-
-		static bool m_cacheProgramBinaries;           //!< shall we cache program (kernel) binaries at all?
-		static bool m_recompileProgramsIfNewerDriver; //!< shall we check driver version and recompile programs if newer?
-
-	public:
-		//! Returns current setting of option cacheProgramBinaries.
-		static bool getCacheProgramBinaries() { return m_cacheProgramBinaries; }
-
-		//! Sets option cacheProgramBinaries to \a b.
-		static void setCacheProgramBinaries(bool b) { m_cacheProgramBinaries = b; }
-
-		//! Returns current setting of option recompileProgramsIfNewerDriver.
-		static bool getRecompileProgramsIfNewerDriver() { return m_recompileProgramsIfNewerDriver; }
-
-		//! Sets option recompileProgramsIfNewerDriver to \a b.
-		static void setRecompileProgramsIfNewerDriver(bool b) { m_recompileProgramsIfNewerDriver = b; }
-	};
-
-
-	//! Create global context from given platform and device type.
-	void createContext(cl_device_type deviceType, const cl::Platform &platform);
-
-	//! Create global context from given device type.
-	void createContext(cl_device_type deviceType);
-
-	//! Returns global OpenCL platform.
-	inline cl::Platform getPlatform() { return Global::s_platform; }
-
-	//! Returns global OpenCL context.
-	inline cl::Context getContext() { return Global::s_context; }
-
-	//! Display information about global OpenCL platform.
-	std::ostream &displayPlatformInfo(std::ostream &os = std::cout);
-
-	//! Returns device type of given device.
-	cl_device_type getType(const cl::Device &device);
-
-	//! Returns maximal number of compute units of given device.
-	cl_uint getMaxComputeUnits(const cl::Device &device);
-
-	//! Returns maximal work group size of given device.
-	size_t getMaxWorkGroupSize(const cl::Device &device);
-
-	//! Returns size of local memory (in bytes) of given device.
-	cl_ulong getLocalMemSize(const cl::Device &device);
-
-
 
 	//! Collection of some static utility functions for file system and kernel caching.
 	class Utility

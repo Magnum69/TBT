@@ -2,7 +2,7 @@
 #ifndef _TBT_DEVICE_CONTROLLER_H
 #define _TBT_DEVICE_CONTROLLER_H
 
-#include "tbthc.h"
+#include <tbt/tbthc.h>
 
 
 namespace tbt
@@ -49,6 +49,23 @@ namespace tbt
 		//! Returns the size of the local memory arena on the associated device.
 		cl_ulong getLocalMemSize() const { return m_localMemSize; }
 	};
+
+
+	class GlobalDeviceControllers
+	{
+		cl::vector<DeviceController*> m_devCons;
+
+	public:
+		GlobalDeviceControllers() { }
+		~GlobalDeviceControllers();
+
+		void init(const cl::Context &context, cl_command_queue_properties properties = 0);
+
+		int numDevices() const { return (int)m_devCons.size(); }
+
+		DeviceController *operator[](int i) { return m_devCons[i]; }
+	};
+
 }
 
 #endif

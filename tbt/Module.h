@@ -2,7 +2,7 @@
 #ifndef _TBT_MODULE_H
 #define _TBT_MODULE_H
 
-#include "tbthc.h"
+#include "Global.h"
 
 
 namespace tbt

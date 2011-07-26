@@ -143,12 +143,14 @@
   <ItemGroup>
     <ClCompile Include="src\DeviceController.cpp" />
     <ClInclude Include="tbt\DeviceController.h" />
+    <ClInclude Include="tbt\Global.h" />
     <ClInclude Include="tbt\RadixSort.h" />
     <ClInclude Include="tbt\tbthc.h" />
     <ClInclude Include="tbt\Error.h" />
     <ClInclude Include="tbt\Module.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Global.cpp" />
     <ClCompile Include="src\RadixSort.cpp" />
     <ClCompile Include="src\tbthc.cpp" />
     <ClCompile Include="src\Module.cpp" />

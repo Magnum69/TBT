@@ -15,4 +15,20 @@ namespace tbt
 		device.getInfo(CL_DEVICE_LOCAL_MEM_SIZE,      &m_localMemSize);
 	}
 
+
+	void GlobalDeviceControllers::init(const cl::Context &context, cl_command_queue_properties properties)
+	{
+		cl::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+
+		for(cl_uint i = 0; i < devices.size(); ++i)
+			m_devCons.push_back(new DeviceController(devices[i], context, properties));
+	}
+
+
+	GlobalDeviceControllers::~GlobalDeviceControllers()
+	{
+		for(cl_uint i = 0; i < m_devCons.size(); ++i)
+			delete m_devCons[i];
+	}
+
 }

@@ -108,28 +108,23 @@ int main(int argc, char *argv[])
 		n += (1024 - (n % 1024));
 	
 	try {
-		tbt::createContext(deviceType);
+		tbt::createContext(deviceType, CL_QUEUE_PROFILING_ENABLE);
 	
 		if(outputMode == omVerbose) {
 			cout << "Selected platform: " << endl;;
 			tbt::displayPlatformInfo();
 		}
 
-		cl::Context context = tbt::getContext();
-		cl::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-		cl::Device device = devices[0];
+		tbt::DeviceController *devCon = tbt::getDeviceController();
 
 		if(outputMode == omVerbose) {
+			cl::Device device = devCon->getDevice();
 			char cBuffer[1024];
 			device.getInfo(CL_DEVICE_NAME, &cBuffer);
 			cout << "Selected device:   " << cBuffer << endl;
 
-			cl_uint computeUnits;
-			device.getInfo(CL_DEVICE_MAX_COMPUTE_UNITS, &computeUnits);
-			cout << "    " << computeUnits << " compute units" << endl;
+			cout << "    " << devCon->getMaxComputeUnits() << " compute units" << endl;
 		}
-
-		cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
 
 		tbt::RadixSort radixSort;
 
@@ -148,7 +143,7 @@ int main(int argc, char *argv[])
 			if(n <= 1024) outputArray(a,n);
 		}
 
-		bool ok = radixSort.run(queue, a,n);
+		bool ok = radixSort.run(devCon->getCommandQueue(), a,n);
 
 		cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
 		cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;

@@ -1,7 +1,6 @@
 
-#include <tbt/tbthc.h>
+#include <tbt/Global.h>
 
-#include <iostream>
 #include <fstream>
 #include <direct.h>
 #include <io.h>
@@ -16,130 +15,6 @@ using namespace std;
 
 namespace tbt {
 
-	cl::Platform Global::s_platform;
-	cl::Context Global::s_context;
-
-	bool Global::m_cacheProgramBinaries = true;
-	bool Global::m_recompileProgramsIfNewerDriver = false;
-
-
-	cl_device_type getType(const cl::Device &device)
-	{
-		cl_device_type deviceType;
-		device.getInfo(CL_DEVICE_TYPE, &deviceType);
-		return deviceType;
-	}
-
-
-	cl_uint getMaxComputeUnits(const cl::Device &device)
-	{
-		cl_uint nComputeUnits;
-		device.getInfo(CL_DEVICE_MAX_COMPUTE_UNITS, &nComputeUnits);
-		return nComputeUnits;
-	}
-
-
-	size_t getMaxWorkGroupSize(const cl::Device &device)
-	{
-		size_t maxWorkGroupSize;
-		device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
-		return maxWorkGroupSize;
-	}
-
-
-	cl_ulong getLocalMemSize(const cl::Device &device)
-	{
-		cl_ulong localMemSize;
-		device.getInfo(CL_DEVICE_LOCAL_MEM_SIZE, &localMemSize);
-		return localMemSize;
-	}
-
-
-	cl::Platform getStdPlatform(cl_device_type deviceType)
-	{
-		// Get a AMD/GPU and Intel/CPU platform and context.
-		cl::vector< cl::Platform > platformList;
-		cl::Platform::get(&platformList);
-
-		int indexAMD = -1, indexIntel = -1, indexNvidia = -1;
-		for(int i = 0; i < (int)platformList.size(); ++i) {
-			string platformName;
-			platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformName);
-			if(platformName == "AMD Accelerated Parallel Processing")
-				indexAMD = i;
-			else if(platformName == "Intel(R) OpenCL")
-				indexIntel = i;
-			else if(platformName == "NVIDIA CUDA")
-				indexNvidia = i;
-		}
-
-		if(deviceType == CL_DEVICE_TYPE_GPU && indexAMD == -1 && indexNvidia == -1)
-			throw Error("No OpenCL platform for GPUs found!", Error::ecNoOpenCLPlatformFound);
-		
-		if(deviceType == CL_DEVICE_TYPE_CPU && indexAMD == -1 && indexIntel == -1)
-			throw Error("No OpenCL platform for CPUs found!", Error::ecNoOpenCLPlatformFound);
-
-		if(deviceType == CL_DEVICE_TYPE_GPU)
-			return platformList[(indexAMD != -1) ? indexAMD : indexNvidia];
-		else
-			return (indexIntel != -1) ? platformList[indexIntel] : platformList[indexAMD];
-	}
-
-
-	ostream &displayPlatformInfo(ostream &os)
-	{
-		cl::Platform platform = getPlatform();
-
-		string platformName;
-		platform.getInfo((cl_platform_info)CL_PLATFORM_NAME,    &platformName);
-		os << "    name:       " << platformName << endl;
-
-		string platformVendor;
-		platform.getInfo((cl_platform_info)CL_PLATFORM_VENDOR,  &platformVendor);
-		os << "    vendor:     " << platformVendor << endl;
-
-		string platformVersion;
-		platform.getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
-		os << "    version:    " << platformVersion << endl;
-
-		string platformProfile;
-		platform.getInfo((cl_platform_info)CL_PLATFORM_PROFILE, &platformProfile);
-		os << "    profile:    " << platformProfile << endl;
-
-		string platformExtensions;
-		platform.getInfo((cl_platform_info)CL_PLATFORM_EXTENSIONS, &platformExtensions);
-		os << "    extensions: " << platformExtensions << endl;
-
-		return os;
-	}
-
-
-	void createContext(cl_device_type deviceType, const cl::Platform &platform)
-	{
-		Global::s_platform = platform;
-
-		cl_context_properties cprops[3] = {
-			CL_CONTEXT_PLATFORM,
-			(cl_context_properties)(platform)(),
-			0
-		};
-
-		Global::s_context = cl::Context(deviceType, cprops);
-	}
-
-
-	void createContext(cl_device_type deviceType)
-	{
-		Global::s_platform = getStdPlatform(deviceType);
-
-		cl_context_properties cprops[3] = {
-			CL_CONTEXT_PLATFORM,
-			(cl_context_properties)(Global::s_platform)(),
-			0
-		};
-
-		Global::s_context = cl::Context(deviceType, cprops);
-	}
 
 	
 	string Utility::toString(cl_uint i)
@@ -316,7 +191,7 @@ namespace tbt {
 
 		cl::Device device = devices[0];
 		
-		bool cacheBinary = Global::getCacheProgramBinaries();
+		bool cacheBinary = globalConfig.getCacheProgramBinaries();
 
 		string sourceName = getExePath() + progName;
 		string binaryName, infoName, deviceName;
@@ -342,7 +217,7 @@ namespace tbt {
 			cacheBinary = (retVal == 0 || errno == EEXIST);
 
 			// check if we have a cache directory, and if the cached file is up-to-date
-			if( retVal == 0 || (errno == EEXIST && (!Global::getRecompileProgramsIfNewerDriver() || checkProgramInfoFile(infoName.c_str(), device))) )
+			if( retVal == 0 || (errno == EEXIST && (!globalConfig.getRecompileProgramsIfNewerDriver() || checkProgramInfoFile(infoName.c_str(), device))) )
 			{
 				//read cached file
 				FILE *pFile;
