@@ -16,6 +16,26 @@ namespace tbt
 	}
 
 
+	std::string DeviceController::getName() const
+	{
+		std::string name;
+		m_device.getInfo(CL_DEVICE_NAME, &name);
+		return name;
+	}
+
+
+	void DeviceController::enqueue1DRangeKernel(
+		const cl::Kernel &kernel,
+		size_t globalWork,
+		size_t localWork,
+		const cl::vector<cl::Event> *events,
+		cl::Event *ev)
+	{
+		cl::NDRange localWorkRange = (localWork > 0) ? cl::NDRange(localWork) : cl::NullRange;
+		m_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(globalWork), localWorkRange, events, ev);
+	}
+
+
 	void GlobalDeviceControllers::init(const cl::Context &context, cl_command_queue_properties properties)
 	{
 		cl::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();

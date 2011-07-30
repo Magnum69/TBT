@@ -3,6 +3,7 @@
 
 
 #include <tbt/Module.h>
+#include <tbt/DeviceArray.h>
 
 
 namespace tbt
@@ -26,10 +27,9 @@ namespace tbt
 		cl_uint m_numPrescanGroups;
 		cl_uint m_prescanInterval;
 
-		cl::Buffer m_buffer_a;
-		cl::Buffer m_buffer_b;
-		cl::Buffer m_buffer_gcount;
-		cl::Buffer m_buffer_psum;
+		DeviceController *m_devCon;
+		DeviceArray<cl_uint> *m_array_gcount;
+		DeviceArray<cl_uint> *m_array_psum;
 
 		double m_tKernelCounting;
 		double m_tKernelPrescanSum;
@@ -41,11 +41,13 @@ namespace tbt
 
 	public:
 		//! Constructs a radix-sort module.
-		RadixSort() { }
+		RadixSort() {
+			m_array_gcount = m_array_psum = 0;
+			m_devCon = 0;
+		}
 
 		//! Runs radix-sort for array \a a with \a n elements.
-		bool run(cl::CommandQueue queue, cl_uint *a, cl_uint n);
-
+		void run(DeviceArray<cl_uint> &devArray);
 
 		//! Returns total running time of counting kernels (in milliseconds).
 		double totalTimeKernelCounting         () const { return m_tKernelCounting; }
@@ -72,7 +74,7 @@ namespace tbt
 
 
 	private:
-		void runSingle(cl::CommandQueue queue, cl::Buffer &bufferSrc, cl::Buffer &bufferTgt, cl_uint shift);
+		void runSingle(DeviceArray<cl_uint> &bufferSrc, DeviceArray<cl_uint> &bufferTgt, cl_uint shift);
 
 		static void assureKernelsLoaded();
 	};

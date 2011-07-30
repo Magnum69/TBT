@@ -1,6 +1,7 @@
 
 
 #include <tbt/RadixSort.h>
+#include <tbt/HostArray.h>
 
 #include <iostream>
 #include <iomanip>
@@ -10,25 +11,27 @@
 using namespace std;
 
 
-void initRandom(cl_uint *a, int n)
+void initRandom(tbt::HostArray<cl_uint> &a)
 {
+	size_t n = a.size();
 #ifdef _WIN32
 	HCRYPTPROV hCryptProv = NULL;
 	CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
-	CryptGenRandom(hCryptProv, n*sizeof(unsigned int), (BYTE*)a);
+	CryptGenRandom(hCryptProv, (DWORD)n*sizeof(cl_uint), (BYTE*) &a[0]);
 	CryptReleaseContext(hCryptProv,0);
 
 #else
-	for(int i = 0; i < n; ++i) {
+	for(size_t i = 0; i < n; ++i) {
 		a[i] = rand();
 	}
 #endif
 }
 
 
-void outputArray(cl_uint *a, cl_uint n)
+void outputArray(tbt::HostArray<cl_uint> &a)
 {
-	for(cl_uint i = 0; i < n; ++i) {
+	size_t n = a.size();
+	for(size_t i = 0; i < n; ++i) {
 		cout << "a[" << setw(4) << i << "] = " << setw(10) << a[i];
 		cout << "   " << setw(3) << (a[i] & 0xffu)
 			<< " | " << setw(3) << ((a[i] >> 8) & 0xffu)
@@ -118,11 +121,7 @@ int main(int argc, char *argv[])
 		tbt::DeviceController *devCon = tbt::getDeviceController();
 
 		if(outputMode == omVerbose) {
-			cl::Device device = devCon->getDevice();
-			char cBuffer[1024];
-			device.getInfo(CL_DEVICE_NAME, &cBuffer);
-			cout << "Selected device:   " << cBuffer << endl;
-
+			cout << "Selected device:   " << devCon->getName() << endl;
 			cout << "    " << devCon->getMaxComputeUnits() << " compute units" << endl;
 		}
 
@@ -131,19 +130,20 @@ int main(int argc, char *argv[])
 		if(outputMode == omVerbose) {
 			cout << "Creating array with " << n << " random unsigned ints..." << flush;
 		}
-		cl_uint *a = new cl_uint[n];
-		cl_uint *c = new cl_uint[n];
+		tbt::HostArray<cl_uint> a(n);
+		initRandom(a);
 
-		initRandom(a,n);
-		for(cl_uint i = 0; i < n; ++i)
-			c[i] = a[i];
+		tbt::HostArray<cl_uint> c(a);
 
 		if(outputMode == omVerbose) {
 			cout << "done." << endl;
-			if(n <= 1024) outputArray(a,n);
+			if(n <= 1024) outputArray(a);
 		}
 
-		bool ok = radixSort.run(devCon->getCommandQueue(), a,n);
+		tbt::DeviceArray<cl_uint> devArray(devCon, a.size());
+		devArray.loadFrom(a);
+		radixSort.run(devArray);
+		devArray.storeToBlocking(a);
 
 		cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
 		cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
@@ -154,25 +154,19 @@ int main(int argc, char *argv[])
 		cout << endl;
 		cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
 
-		if(ok) {
-			cout << "Checking results..." << flush;
-			sort(c,c+n);
+		cout << "Checking results..." << flush;
+		sort(&c[0],&c[n]);
 			
-			cl_uint nIncorrect = 0;
-			for(cl_uint i = 0; i < n; ++i)
-				if(a[i] != c[i]) {
-					nIncorrect++;
-					//cout << i << ": " << a[i] << " and " << c[i] << endl;
-				}
-			if(nIncorrect)
-				cout << " " << nIncorrect << " elements incorrect!" << endl;
-			else
-				cout << "ok." << endl;
-		}
-
-		delete[] a;
-		delete [] c;
-
+		cl_uint nIncorrect = 0;
+		for(cl_uint i = 0; i < n; ++i)
+			if(a[i] != c[i]) {
+				nIncorrect++;
+				//cout << i << ": " << a[i] << " and " << c[i] << endl;
+			}
+		if(nIncorrect)
+			cout << " " << nIncorrect << " elements incorrect!" << endl;
+		else
+			cout << "ok." << endl;
 
 	} catch(cl::Error err) {
 		cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << endl;

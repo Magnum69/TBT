@@ -2,6 +2,18 @@
 #ifndef _TBT_BASE_H
 #define _TBT_BASE_H
 
+/*! \mainpage The Basic Toolbox for heterogeneous programming
+ *
+ * TBT is a C++-library that makes it easy to use OpenCL for heterogeneous
+ * programming. It provides an easy-to-use interface to OpenCL and
+ * implements basic primitives that can also be used with user OpenCL
+ * programs.
+ *
+ * \section Introduction
+ *
+ */
+
+
 #define __NO_STD_VECTOR             // Use cl::vector instead of STL version
 #define __CL_ENABLE_EXCEPTIONS      // use exceptions
 #pragma warning( disable : 4290 )   // avoid useless warnings with Visual C++ and OpenCL exceptions
