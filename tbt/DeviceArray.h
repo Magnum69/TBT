@@ -31,11 +31,11 @@ namespace tbt
 
 		//! Constructs a device array for \a n elements of type \a T associated with device controller \a devCon.
 		/**
-		 * @param devCon  must be a valid device controller that will be associated with the device array.
-		 * @param n       is the number of elements (of type \a T) in the constructed device array.
-		 * @param flags   are the memory flags (restricting the access of kernels to the corresponding device memory)
-		 *                that will be used for creating the OpenCL buffer object; \a flags can be one of
-		 *                CL_MEM_READ_WRITE, CL_MEM_READ_ONLY and CL_MEM_WRITE_ONLY.
+		 * @param[in] devCon  must be a valid device controller that will be associated with the device array.
+		 * @param[in] n       is the number of elements (of type \a T) in the constructed device array.
+		 * @param[in] flags   are the memory flags (restricting the access of kernels to the corresponding device memory)
+		 *                    that will be used for creating the OpenCL buffer object; \a flags can be one of
+		 *                    CL_MEM_READ_WRITE, CL_MEM_READ_ONLY and CL_MEM_WRITE_ONLY.
 		 */
 		DeviceArray(DeviceController *devCon, size_t n, cl_mem_flags flags = CL_MEM_READ_WRITE)
 			: m_buffer( devCon->getContext(), flags & (CL_MEM_READ_WRITE | CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY), n*sizeof(T) ),
@@ -44,17 +44,29 @@ namespace tbt
 		{ }
 
 		//! Returns the device controller associated with this device array.
+		/**
+		 * @return the device controller associated with this device array; will be 0 if the device array is invalid.
+		 */
 		DeviceController *getDeviceController() const {
 			return m_devCon;
 		}
 
-		//! Returns the coresponding OpenCL buffer object.
+		//! Returns the corresponding OpenCL buffer object.
+		/**
+		 * @return the OpenCL buffer object of this device array; will be invalid if the device array is invalid.
+		 */
 		cl::Buffer &getBuffer() { return m_buffer; }
 
 		//! Converts a device array to an OpenCL buffer object.
+		/**
+		 * @return the OpenCL buffer object of this device array; will be invalid if the device array is invalid.
+		 */
 		operator cl::Buffer() { return m_buffer; }
 
 		//! Returns the number of elements in the array.
+		/**
+		 * @return the number of elements in this device array; will be 0 if the device array is invalid.
+		 */
 		size_t size() const {
 			return m_nElements;
 		}
@@ -72,9 +84,9 @@ namespace tbt
 		 * This methods enqueues a blocking write-buffer command. Once this method returns, the memory
 		 * transfer to the device is completed.
 		 *
-		 * @param ptr  must point to an allocated region of memory that is large enough to store the whole array.
+		 * @param[in] ptr  must point to an allocated region of memory that is large enough to store the whole array.
 		 */
-		void loadFromBlocking(T *ptr) {
+		void loadFromBlocking(const T *ptr) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
 		}
 
@@ -83,10 +95,10 @@ namespace tbt
 		 * This methods enqueues a blocking write-buffer command. Once this method returns, the memory
 		 * transfer to the device is completed.
 		 *
-		 * @param a  must be a host array that is large enough to store the whole array.
+		 * @param[in] ha  must be a host array that is large enough to store the whole array.
 		 */
-		void loadFromBlocking(const HostArray<T> &a) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &a[0]);
+		void loadFromBlocking(const HostArray<T> &ha) {
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ha[0]);
 		}
 
 		//! Enqueues a command for loading data from a C-array \a ptr onto the device.
@@ -94,10 +106,10 @@ namespace tbt
 		 * This methods enqueues a non-blocking write-buffer command and returns an event object associated with
 		 * this write command that can be queried (or waited for).
 		 *
-		 * @param ptr  must point to an allocated region of memory that is large enough to store the whole array.
-		 * @param eventLoad   if not 0, returns an event object that identifies the write command.
+		 * @param[in]     ptr         must point to an allocated region of memory that is large enough to store the whole array.
+		 * @param[in,out] eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
-		void loadFrom(T *ptr, cl::Event *eventLoad = 0) {
+		void loadFrom(const T *ptr, cl::Event *eventLoad = 0) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventLoad);
 		}
 
@@ -106,11 +118,11 @@ namespace tbt
 		 * This methods enqueues a non-blocking write-buffer command and returns an event object associated with
 		 * this write command that can be queried (or waited for).
 		 *
-		 * @param a           must be a host array that is large enough to store the whole array.
-		 * @param eventLoad   if not 0, returns an event object that identifies the write command.
+		 * @param[in]     ha          must be a host array that is large enough to store the whole array.
+		 * @param[in,out] eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
-		void loadFrom(const HostArray<T> &a, cl::Event *eventLoad = 0) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &a[0], 0, eventLoad);
+		void loadFrom(const HostArray<T> &ha, cl::Event *eventLoad = 0) {
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ha[0], 0, eventLoad);
 		}
 
 		//! Stores the data on the device in C-array \a ptr.
@@ -118,7 +130,7 @@ namespace tbt
 		 * This methods enqueues a blocking read-buffer command. Once this method returns, the memory
 		 * transfer to the host is completed.
 		 *
-		 * @param ptr  must point to an allocated region of memory that is large enough to hold the whole array.
+		 * @param[in,out] ptr  must point to an allocated region of memory that is large enough to hold the whole array.
 		 */
 		void storeToBlocking(T *ptr) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
@@ -129,10 +141,10 @@ namespace tbt
 		 * This methods enqueues a blocking read-buffer command. Once this method returns, the memory
 		 * transfer to the host is completed.
 		 *
-		 * @param a  must be a host array that is large enough to hold the whole array.
+		 * @param[in,out] ha  must be a host array that is large enough to hold the whole array.
 		 */
-		void storeToBlocking(HostArray<T> &a) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &a[0]);
+		void storeToBlocking(HostArray<T> &ha) {
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ha[0]);
 		}
 
 		//! Enqueues a command for storing the data on the device in C-array \a ptr.
@@ -140,8 +152,8 @@ namespace tbt
 		 * This methods enqueues a non-blocking read-buffer command and returns an event object associated with
 		 * this read command that can be queried (or waited for).
 		 *
-		 * @param ptr          must point to an allocated region of memory that is large enough to hold the whole array.
-		 * @param eventStore   if not 0, returns an event object that identifies the read command.
+		 * @param[in,out] ptr          must point to an allocated region of memory that is large enough to hold the whole array.
+		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
 		 */
 		void storeTo(T *ptr, cl::Event *eventStore = 0) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventStore);
@@ -152,11 +164,11 @@ namespace tbt
 		 * This methods enqueues a non-blocking read-buffer command and returns an event object associated with
 		 * this read command that can be queried (or waited for).
 		 *
-		 * @param a            must be a host array that is large enough to hold the whole array.
-		 * @param eventStore   if not 0, returns an event object that identifies the read command.
+		 * @param[in,out] ha           must be a host array that is large enough to hold the whole array.
+		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
 		 */
-		void storeTo(HostArray<T> &a, cl::Event *eventStore = 0) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &a[0], 0, eventStore);
+		void storeTo(HostArray<T> &ha, cl::Event *eventStore = 0) {
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ha[0], 0, eventStore);
 		}
 
 		//@}
