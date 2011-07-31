@@ -318,4 +318,18 @@ namespace tbt {
 
 		return program;
 	}
+
+
+	void *Utility::alignedMalloc(size_t size, size_t alignment)
+	{
+		return _aligned_malloc(size, alignment);
+	}
+
+
+	void Utility::alignedFree(void *ptr)
+	{
+		_aligned_free(ptr);
+	}
+
+
 }
