@@ -14,8 +14,6 @@ using namespace std;
 
 
 namespace tbt {
-
-
 	
 	string Utility::toString(cl_uint i)
 	{
