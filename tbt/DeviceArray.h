@@ -13,6 +13,7 @@ namespace tbt
 	template<class T>
 	class DeviceArray
 	{
+	protected:
 		cl::Buffer m_buffer;         //!< the allocated OpenCL buffer object.
 		size_t m_nElements;          //!< the number of elements in the array.
 		DeviceController *m_devCon;  //!< the associated device controller.
@@ -74,7 +75,7 @@ namespace tbt
 		 * @param ptr  must point to an allocated region of memory that is large enough to store the whole array.
 		 */
 		void loadFromBlocking(T *ptr) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, true, 0, m_nElements*sizeof(T), ptr);
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
 		}
 
 		//! Loads data from host array \a a onto the device.
@@ -85,7 +86,7 @@ namespace tbt
 		 * @param a  must be a host array that is large enough to store the whole array.
 		 */
 		void loadFromBlocking(const HostArray<T> &a) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, true, 0, m_nElements*sizeof(T), &a[0]);
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &a[0]);
 		}
 
 		//! Enqueues a command for loading data from a C-array \a ptr onto the device.
@@ -97,7 +98,7 @@ namespace tbt
 		 * @param eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
 		void loadFrom(T *ptr, cl::Event *eventLoad = 0) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, false, 0, m_nElements*sizeof(T), ptr, 0, eventLoad);
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventLoad);
 		}
 
 		//! Enqueues a command for loading data from host array \a a onto the device.
@@ -109,7 +110,7 @@ namespace tbt
 		 * @param eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
 		void loadFrom(const HostArray<T> &a, cl::Event *eventLoad = 0) {
-			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, false, 0, m_nElements*sizeof(T), &a[0], 0, eventLoad);
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &a[0], 0, eventLoad);
 		}
 
 		//! Stores the data on the device in C-array \a ptr.
@@ -120,7 +121,7 @@ namespace tbt
 		 * @param ptr  must point to an allocated region of memory that is large enough to hold the whole array.
 		 */
 		void storeToBlocking(T *ptr) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, true, 0, m_nElements*sizeof(T), ptr);
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
 		}
 
 		//! Stores the data on the device in host array \a a.
@@ -131,7 +132,7 @@ namespace tbt
 		 * @param a  must be a host array that is large enough to hold the whole array.
 		 */
 		void storeToBlocking(HostArray<T> &a) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, true, 0, m_nElements*sizeof(T), &a[0]);
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &a[0]);
 		}
 
 		//! Enqueues a command for storing the data on the device in C-array \a ptr.
@@ -143,7 +144,7 @@ namespace tbt
 		 * @param eventStore   if not 0, returns an event object that identifies the read command.
 		 */
 		void storeTo(T *ptr, cl::Event *eventStore = 0) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, false, 0, m_nElements*sizeof(T), ptr, 0, eventStore);
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventStore);
 		}
 
 		//! Enqueues a command for storing the data on the device in host array \a a.
@@ -155,7 +156,7 @@ namespace tbt
 		 * @param eventStore   if not 0, returns an event object that identifies the read command.
 		 */
 		void storeTo(HostArray<T> &a, cl::Event *eventStore = 0) {
-			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, false, 0, m_nElements*sizeof(T), &a[0], 0, eventStore);
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &a[0], 0, eventStore);
 		}
 
 		//@}
