@@ -13,6 +13,7 @@ namespace tbt
 		device.getInfo(CL_DEVICE_MAX_COMPUTE_UNITS,   &m_maxComputeUnits);
 		device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &m_maxWorkGroupSize);
 		device.getInfo(CL_DEVICE_LOCAL_MEM_SIZE,      &m_localMemSize);
+		device.getInfo(CL_DEVICE_HOST_UNIFIED_MEMORY, &m_hostUnifiedMemory);
 		device.getInfo(CL_DEVICE_MEM_BASE_ADDR_ALIGN, &m_memBaseAddrAlign);
 	}
 

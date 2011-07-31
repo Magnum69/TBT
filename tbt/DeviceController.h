@@ -14,28 +14,38 @@ namespace tbt
 		cl::Context      m_context; //!< the associated context.
 		cl::CommandQueue m_queue;   //!< the command queue for device in context.
 
-		cl_device_type m_deviceType;       //!< the type of the associated device.
-		cl_uint        m_maxComputeUnits;  //!< the number of parallel compute units on the associated device.
-		size_t         m_maxWorkGroupSize; //!< the maximum number of work-items in a work-group on the associated device.
-		cl_ulong       m_localMemSize;     //!< the size of the local memory arena on the associated device.
-		cl_uint        m_memBaseAddrAlign;
+		cl_device_type m_deviceType;        //!< the type of the associated device.
+		cl_uint        m_maxComputeUnits;   //!< the number of parallel compute units on the associated device.
+		size_t         m_maxWorkGroupSize;  //!< the maximum number of work-items in a work-group on the associated device.
+		cl_ulong       m_localMemSize;      //!< the size of the local memory arena on the associated device.
+		cl_bool        m_hostUnifiedMemory; //!< has the device and the host a unified memory subsystem?
+		cl_uint        m_memBaseAddrAlign;  //!< the minimum alignment of memory base addresses.
 
 	public:
 		//! Constructs a device controller for \a device and \a context.
 		/**
-		 * @param device      a valid OpenCL device in \a context that will be associated with this device controller.
-		 * @param context     a valid OpenCL context.
-		 * @param properties  properties set of the created command queue for \a device.
+		 * @param[in] device      a valid OpenCL device in \a context that will be associated with this device controller.
+		 * @param[in] context     a valid OpenCL context.
+		 * @param[in] properties  properties set of the created command queue for \a device.
 		 */
 		DeviceController(cl::Device device, cl::Context context, cl_command_queue_properties properties = 0);
 
 		//! Returns the associated OpenCL device.
+		/**
+		 * @return the device associated with this device controller.
+		 */
 		cl::Device getDevice() { return m_device; }
 
 		//! Returns the command queue.
+		/**
+		 * @return the command queue of this device controller.
+		 */
 		cl::CommandQueue getCommandQueue() { return m_queue; }
 
 		//! Returns the associated OpenCL context.
+		/**
+		 * @return the context associated with this device controller.
+		 */
 		cl::Context getContext() { return m_context; }
 
 
@@ -45,20 +55,48 @@ namespace tbt
 		//@{
 
 		//! Returns the type of the associated OpenCL device.
+		/**
+		 * @return the type (CL_DEVICE_TYPE) of the device associated with this device controller.
+		 */
 		cl_device_type getType() const { return m_deviceType; }
 
 		//! Returns the name of the associated OpenCL device.
+		/**
+		 * @return the name (CL_DEVICE_NAME) of the device associated with this device controller.
+		 */
 		std::string getName() const;
 
 		//! Returns the number of parallel compute units on the associated OpenCL device.
+		/**
+		 * @return the number of compute units (CL_DEVICE_MAX_COMPUTE_UNITS) of the device associated with this device controller.
+		 */
 		cl_uint getMaxComputeUnits() const { return m_maxComputeUnits; }
 
 		//! Returns the maximum number of work-items in a work-group on the associated device.
+		/**
+		 * @return the maximum number of work-items in a work-group (CL_DEVICE_MAX_WORK_GROUP_SIZE)
+		 *         of the device associated with this device controller.
+		 */
 		size_t getMaxWorkGroupSize() const { return m_maxWorkGroupSize; }
 
 		//! Returns the size of the local memory arena on the associated device.
+		/**
+		 * @return the size of the local memory arena (CL_DEVICE_LOCAL_MEM_TYPE) on the device associated with this device controller.
+		 */
 		cl_ulong getLocalMemSize() const { return m_localMemSize; }
 		
+		//! Returns true if the host and the associated device have a unified memory subsystem.
+		/**
+		 * @return true if the host and the associated device have a unified memory subsystem
+		 *              (CL_DEVICE_HOST_UNIFIED_MEMORY), false otherwise.
+		 */
+		cl_uint getHostUnifiedMemory() const { return m_hostUnifiedMemory; }
+
+		//! Returns the minimum alignment of memory base addresses of the associated device.
+		/**
+		 * @return the minimum alignment of memory base addresses (CL_DEVICE_MEM_BASE_ADDR_ALIGN)
+		 * of the device associated with this device controller.
+		 */
 		cl_uint getMemBaseAddrAlign() const { return m_memBaseAddrAlign; }
 
 		//@}
@@ -72,21 +110,21 @@ namespace tbt
 
 		//! Enqueues a command to execute a 1D-range kernel on this device.
 		/**
-		 * @param kernel      is a valid kernel object. The OpenCL context associated with kernel and
-		 *                    this device must be the same.
-		 * @param globalWork  is the number of global work-items in dimension 1
-		 *                    (and 1 for dimensions 2 and 3).
-		 * @param localWork   is the number of work-items that make-up a work-group in dimension 1
-		 *                    (and 1 for dimensions 2 and 3). \a localWork can be 0 in which case the
-		 *                    OpenCL implementation will determine how to break the global work-items
-		 *                    into appropriate work-group instances.
-		 * @param events      specify events that need to complete before this particular command can be
-		 *                    executed. If \a events is 0 (the default), then this command does not
-		 *                    wait on any event to complete.
-		 * @param ev          returns an event object that identifies this particular kernel execution
-		 *                    instance. If event is 0 (the default), no event will be created for this kernel
-		 *                    execution instance and therefore it will not be possible to query or queue a
-		 *                    wait for this kernel execution instance.
+		 * @param[in]     kernel      is a valid kernel object. The OpenCL context associated with kernel and
+		 *                            this device must be the same.
+		 * @param[in]     globalWork  is the number of global work-items in dimension 1
+		 *                            (and 1 for dimensions 2 and 3).
+		 * @param[in]     localWork   is the number of work-items that make-up a work-group in dimension 1
+		 *                            (and 1 for dimensions 2 and 3). \a localWork can be 0 in which case the
+		 *                            OpenCL implementation will determine how to break the global work-items
+		 *                            into appropriate work-group instances.
+		 * @param[in]     events      specify events that need to complete before this particular command can be
+		 *                            executed. If \a events is 0 (the default), then this command does not
+		 *                            wait on any event to complete.
+		 * @param[in,out] ev          returns an event object that identifies this particular kernel execution
+		 *                            instance. If event is 0 (the default), no event will be created for this kernel
+		 *                            execution instance and therefore it will not be possible to query or queue a
+		 *                            wait for this kernel execution instance.
 		 */
 		void enqueue1DRangeKernel(
 			const cl::Kernel &kernel,
