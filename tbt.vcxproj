@@ -146,6 +146,7 @@
     <ClInclude Include="tbt\DeviceController.h" />
     <ClInclude Include="tbt\Global.h" />
     <ClInclude Include="tbt\HostArray.h" />
+    <ClInclude Include="tbt\MappedArray.h" />
     <ClInclude Include="tbt\RadixSort.h" />
     <ClInclude Include="tbt\tbthc.h" />
     <ClInclude Include="tbt\Error.h" />

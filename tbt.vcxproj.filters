@@ -43,6 +43,9 @@
     <ClInclude Include="tbt\HostArray.h">
       <Filter>Header files</Filter>
     </ClInclude>
+    <ClInclude Include="tbt\MappedArray.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\tbthc.cpp">

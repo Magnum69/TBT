@@ -1,7 +1,7 @@
 
 
 #include <tbt/RadixSort.h>
-#include <tbt/HostArray.h>
+#include <tbt/MappedArray.h>
 
 #include <iostream>
 #include <iomanip>
@@ -11,7 +11,8 @@
 using namespace std;
 
 
-void initRandom(tbt::HostArray<cl_uint> &a)
+template<class ARRAY>
+void initRandom(ARRAY &a)
 {
 	size_t n = a.size();
 #ifdef _WIN32
@@ -28,7 +29,8 @@ void initRandom(tbt::HostArray<cl_uint> &a)
 }
 
 
-void outputArray(tbt::HostArray<cl_uint> &a)
+template<class ARRAY>
+void outputArray(ARRAY &a)
 {
 	size_t n = a.size();
 	for(size_t i = 0; i < n; ++i) {
@@ -123,6 +125,7 @@ int main(int argc, char *argv[])
 		if(outputMode == omVerbose) {
 			cout << "Selected device:   " << devCon->getName() << endl;
 			cout << "    " << devCon->getMaxComputeUnits() << " compute units" << endl;
+			cout << "    " << devCon->getMemBaseAddrAlign() << " bits address alignment" << endl;
 		}
 
 		tbt::RadixSort radixSort;
@@ -130,20 +133,26 @@ int main(int argc, char *argv[])
 		if(outputMode == omVerbose) {
 			cout << "Creating array with " << n << " random unsigned ints..." << flush;
 		}
-		tbt::HostArray<cl_uint> a(n);
+		//tbt::HostArray<cl_uint> a(n);
+		tbt::MappedArray<cl_uint> a(devCon, n);
 		initRandom(a);
 
-		tbt::HostArray<cl_uint> c(a);
+		tbt::HostArray<cl_uint> c(n);
+		for(size_t i = 0; i < n; ++i)
+			c[i] = a[i];
 
 		if(outputMode == omVerbose) {
 			cout << "done." << endl;
 			if(n <= 1024) outputArray(a);
 		}
 
-		tbt::DeviceArray<cl_uint> devArray(devCon, a.size());
-		devArray.loadFrom(a);
-		radixSort.run(devArray);
-		devArray.storeToBlocking(a);
+		//tbt::DeviceArray<cl_uint> devArray(devCon, a.size());
+		//devArray.loadFrom(a);
+		a.mapHostToDevice();
+		//radixSort.run(devArray);
+		radixSort.run(a);
+		//devArray.storeToBlocking(a);
+		a.mapDeviceToHostBlocking();
 
 		cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
 		cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
