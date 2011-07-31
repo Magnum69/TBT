@@ -18,6 +18,7 @@ namespace tbt
 		cl_uint        m_maxComputeUnits;  //!< the number of parallel compute units on the associated device.
 		size_t         m_maxWorkGroupSize; //!< the maximum number of work-items in a work-group on the associated device.
 		cl_ulong       m_localMemSize;     //!< the size of the local memory arena on the associated device.
+		cl_uint        m_memBaseAddrAlign;
 
 	public:
 		//! Constructs a device controller for \a device and \a context.
@@ -57,6 +58,8 @@ namespace tbt
 
 		//! Returns the size of the local memory arena on the associated device.
 		cl_ulong getLocalMemSize() const { return m_localMemSize; }
+		
+		cl_uint getMemBaseAddrAlign() const { return m_memBaseAddrAlign; }
 
 		//@}
 
@@ -102,18 +105,42 @@ namespace tbt
 	};
 
 
+	//! Encapsulates the globally available device controllers.
+	/**
+	 * It is not necessary to manually create instances of this classes. The global device
+	 * controllers are available through globalConfig.
+	 *
+	 * \see class Global, global configuration variable globalConfig.
+	 */
 	class GlobalDeviceControllers
 	{
-		cl::vector<DeviceController*> m_devCons;
+		cl::vector<DeviceController*> m_devCons;  //!< Maintains the device controllers.
 
 	public:
+		//! Constructs an instance of GlobalDeviceControllers.
+		/**
+		 * Does not create or add any device controllers.
+		 */
 		GlobalDeviceControllers() { }
+
+		//! Destructor. Releases all device controllers.
 		~GlobalDeviceControllers();
 
+		//! Initializes the global device cotrollers for \a context and (optional) \a properties for the created command queues.
+		/**
+		 * Creates device controllers for all devices in the context, using the passed properties
+		 * for command queues.
+		 *
+		 * @param context     must be a valid OpenCL context.
+		 * @param properties  must be a bit-field of command line properties; possible values are
+		 *                    CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
+		 */
 		void init(const cl::Context &context, cl_command_queue_properties properties = 0);
 
+		//! Returns the number of device controllers.
 		int numDevices() const { return (int)m_devCons.size(); }
 
+		//! Returns the <i>i</i>-th device controller.
 		DeviceController *operator[](int i) { return m_devCons[i]; }
 	};
 
