@@ -2,11 +2,13 @@
 
 #include <tbt/RadixSort.h>
 #include <tbt/MappedArray.h>
+#include <tbt/algorithm.h>
 
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+
 
 using namespace std;
 
@@ -128,7 +130,7 @@ int main(int argc, char *argv[])
 			cout << "    " << devCon->getMemBaseAddrAlign() << " bits address alignment" << endl;
 		}
 
-		tbt::RadixSort radixSort;
+		//tbt::RadixSort radixSort;
 
 		if(outputMode == omVerbose) {
 			cout << "Creating array with " << n << " random unsigned ints..." << flush;
@@ -150,18 +152,19 @@ int main(int argc, char *argv[])
 		//devArray.loadFrom(a);
 		a.mapHostToDevice();
 		//radixSort.run(devArray);
-		radixSort.run(a);
+		//radixSort.run(a);
+		tbt::radixSort(a);
 		//devArray.storeToBlocking(a);
 		a.mapDeviceToHostBlocking();
 
-		cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
-		cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
-		cout << "kernel Prescan:             " << radixSort.totalTimeKernelPrescan()  << " ms" << endl;
-		cout << "kernel Prescan with Offset: " << radixSort.totalTimeKernelPrescanWithOffset()  << " ms" << endl;
-		cout << "kernel Permute:             " << radixSort.totalTimeKernelPermute()  << " ms" << endl;
-		cout << "total kernel time:          " << radixSort.totalTimeKernels() << " ms" << endl;
-		cout << endl;
-		cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
+		//cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
+		//cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
+		//cout << "kernel Prescan:             " << radixSort.totalTimeKernelPrescan()  << " ms" << endl;
+		//cout << "kernel Prescan with Offset: " << radixSort.totalTimeKernelPrescanWithOffset()  << " ms" << endl;
+		//cout << "kernel Permute:             " << radixSort.totalTimeKernelPermute()  << " ms" << endl;
+		//cout << "total kernel time:          " << radixSort.totalTimeKernels() << " ms" << endl;
+		//cout << endl;
+		//cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
 
 		cout << "Checking results..." << flush;
 		sort(&c[0],&c[n]);

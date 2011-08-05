@@ -13,7 +13,6 @@ namespace tbt
 		static cl::Program s_program;  //!< the OpenCL program of the module.
 		LARGE_INTEGER m_timer;         //!< stores high-performance counter.
 
-
 	public:
 		//! Constructs a module.
 		Module() { }

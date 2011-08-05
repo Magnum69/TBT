@@ -21,7 +21,7 @@
  * This is a simple TBT-program that sorts an array on the GPU.
  *
  * \code
- * #include <tbt/RadixSort.h>
+ * #include <tbt/algorithm.h>
  *
  * int main()
  * {
@@ -32,15 +32,12 @@
  *     tbt::DeviceController *devCon = tbt::getDeviceController();
  *     
  *     const size_t n = 4096;
- *     tbt::MappedArray<cl_uint> array(devCon, n);  // Create an array on the host, mapped to a GPU device 
- *     initRandom(array);                           // initialize array with random data (on the host)
+ *     tbt::MappedArray<cl_uint> mappedArray(devCon, n);  // Create an array on the host, mapped to a GPU device 
+ *     initRandom(mappedArray);                           // initialize array with random data (on the host)
  *
- *     array.mapHostToDevice();                     // Transfer array from host to device
- *     
- *     tbt::RadixSort radixSort;
- *     radixSort.run(array);                        // Sort the array on the GPU device
- *     
- *     array.mapDeviceToHostBlocking(array);        // Transfer (sorted) array back to host
+ *     mappedArray.mapHostToDevice();                     // Transfer array from host to device
+ *     radixSort(mappedArray);                            // Sort the array on the GPU device
+ *     mappedArray.mapDeviceToHostBlocking();             // Transfer (sorted) array back to host
  * }
  * \endcode
  */

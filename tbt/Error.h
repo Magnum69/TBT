@@ -20,7 +20,8 @@ namespace tbt
 			ecFileNotFound,            //!< a file could not be found.
 			ecOutOfMemory,             //!< not enough memory available.
 			ecProgramCacheError,       //!< an error occurred while trying to cache a kernel binary.
-			ecNoOpenCLPlatformFound    //!< no suitable OpenCL platform could be found.
+			ecNoOpenCLPlatformFound,   //!< no suitable OpenCL platform could be found.
+			ecDataTypeNotSupported     //!< data type of a device array not supported.
 		};
 
 		//! Constructs an unknown error.

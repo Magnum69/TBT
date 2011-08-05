@@ -60,16 +60,34 @@ namespace tbt
 		DeviceController *getGPUDeviceController() { return (m_gpuDeviceIndex >= 0) ? m_devCons[m_gpuDeviceIndex] : 0; }
 	};
 
+
+	/**
+	 * \defgroup context Platform and context
+	 * \brief These functions allow to select the global platform and context, and provide access to
+	 *        platform, context, and device controllers.
+	 */
+	//@{
+
 	//! The (one and only) global configuration object.
 	extern Global globalConfig;
 
-
 	//! Create global context from given platform and device type.
+	/**
+	 * @param deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
+	 * @param platform    must be a valid OpenCL platform.
+	 * @param properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
+	 *                    properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
+	 */
 	inline void createContext(cl_device_type deviceType, const cl::Platform &platform, cl_command_queue_properties properties = 0) {
 		globalConfig.createContext(deviceType, platform, properties);
 	}
 
 	//! Create global context from given device type.
+	/**
+	 * @param deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
+	 * @param properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
+	 *                    properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
+	 */
 	void createContext(cl_device_type deviceType, cl_command_queue_properties properties = 0);
 
 	//! Returns global OpenCL platform.
@@ -79,6 +97,10 @@ namespace tbt
 	inline cl::Context getContext() { return globalConfig.getContext(); }
 
 	//! Display information about global OpenCL platform.
+	/**
+	 * @param os is the C++-output stream on which the information about the platform is written.
+	 * @return the output stream \a os.
+	 */
 	std::ostream &displayPlatformInfo(std::ostream &os = std::cout);
 
 	//! Returns the first global device controller (if any, otherwise 0 is returned).
@@ -89,6 +111,8 @@ namespace tbt
 
 	//! Returns a global device controller for a GPU device (if any, otherwise 0 is returned).
 	inline DeviceController *getGPUDeviceController() { return globalConfig.getGPUDeviceController(); }
+
+	//@}
 
 }
 

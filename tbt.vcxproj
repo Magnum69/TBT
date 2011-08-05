@@ -141,7 +141,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\DeviceController.cpp" />
+    <ClInclude Include="tbt\algorithm.h" />
     <ClInclude Include="tbt\DeviceArray.h" />
     <ClInclude Include="tbt\DeviceController.h" />
     <ClInclude Include="tbt\Global.h" />

@@ -88,7 +88,7 @@ namespace tbt
 		//! Returns true if the host and the associated device have a unified memory subsystem.
 		/**
 		 * @return true if the host and the associated device have a unified memory subsystem
-		 *              (CL_DEVICE_HOST_UNIFIED_MEMORY), false otherwise.
+		 *         (CL_DEVICE_HOST_UNIFIED_MEMORY), false otherwise.
 		 */
 		cl_uint getHostUnifiedMemory() const { return m_hostUnifiedMemory; }
 
