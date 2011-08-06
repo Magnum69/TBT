@@ -49,11 +49,11 @@
     <ClInclude Include="tbt\algorithm.h">
       <Filter>Header files</Filter>
     </ClInclude>
+    <ClInclude Include="tbt\Utility.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\tbthc.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Module.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -67,6 +67,9 @@
       <Filter>Source files</Filter>
     </ClCompile>
     <ClCompile Include="src\algorithm.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\DeviceController.cpp" />
+    <ClCompile Include="src\Utility.cpp" />
     <ClInclude Include="tbt\algorithm.h" />
     <ClInclude Include="tbt\DeviceArray.h" />
     <ClInclude Include="tbt\DeviceController.h" />
@@ -153,11 +154,11 @@
     <ClInclude Include="tbt\tbthc.h" />
     <ClInclude Include="tbt\Error.h" />
     <ClInclude Include="tbt\Module.h" />
+    <ClInclude Include="tbt\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Global.cpp" />
     <ClCompile Include="src\RadixSort.cpp" />
-    <ClCompile Include="src\tbthc.cpp" />
     <ClCompile Include="src\Module.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@
 #define _TBT_MAPPED_ARRAY_H
 
 #include <tbt/DeviceArray.h>
+#include <tbt/Utility.h>
 
 
 namespace tbt

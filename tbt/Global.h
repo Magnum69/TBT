@@ -62,7 +62,7 @@ namespace tbt
 
 
 	/**
-	 * \defgroup context Platform and context
+	 * \defgroup context Platform and Context
 	 * \brief These functions allow to select the global platform and context, and provide access to
 	 *        platform, context, and device controllers.
 	 */

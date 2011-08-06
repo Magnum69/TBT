@@ -1,5 +1,6 @@
 
 #include <tbt/Module.h>
+#include <tbt/Utility.h>
 
 #include <iostream>
 #include <fstream>
