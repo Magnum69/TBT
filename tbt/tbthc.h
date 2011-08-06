@@ -57,6 +57,10 @@
 namespace tbt
 {
 
+	//! The type for array indices.
+	typedef ptrdiff_t index_t;
+
+
 	//! Collection of some static utility functions for file system and kernel caching.
 	class Utility
 	{

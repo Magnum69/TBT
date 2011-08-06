@@ -9,16 +9,105 @@
 namespace tbt
 {
 
+	template<class T> class DeviceArray;
+
+
+	//! Iterator for device arrays.
+	template<class T>
+	class _DeviceArrayIterator
+	{
+		friend class DeviceArray<T>;
+
+		index_t         m_index;     //!< the index in the device array.
+		DeviceArray<T> *m_devArray;  //!< the device array this iterator points to.
+
+		//! Constructs an iterator pointing to \a index in \a devArray.
+		_DeviceArrayIterator(index_t index, DeviceArray<T> *devArray) : m_index(index), m_devArray(devArray) { }
+
+	public:
+		//! The type for iterator differences.
+		typedef index_t difference_type;
+
+		//! Constructs an invalid iterator.
+		_DeviceArrayIterator() : m_index(0), m_devArray(0) { }
+
+		//! Copy constructor. Constructs an iterator pointing to the same position as \a iter.
+		_DeviceArrayIterator(const _DeviceArrayIterator<T> &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
+
+		//! Returns the device array this iterator points to.
+		DeviceArray<T> *getDeviceArray() { return m_devArray; }
+
+		//! Assignment operator.
+		_DeviceArrayIterator<T> &operator=(const _DeviceArrayIterator<T> &iter) {
+			m_index    = iter.m_index;
+			m_devArray = iter.m_devArray;
+			return *this;
+		}
+
+		//! Moves iterator one position forward (pre-increment).
+		_DeviceArrayIterator<T> &operator++() {
+			++m_index;
+			return *this;
+		}
+
+		//! Moves iterator one position forward (post-increment).
+		_DeviceArrayIterator<T> operator++(int) {
+			_DeviceArrayIterator<T> iter(*this);
+			++m_index;
+			return iter;
+		}
+
+		//! Moves iterator one position backward (pre-increment).
+		_DeviceArrayIterator<T> &operator--() {
+			--m_index;
+			return *this;
+		}
+
+		//! Moves iterator one position backward (post-increment).
+		_DeviceArrayIterator<T> operator--(int) {
+			_DeviceArrayIterator<T> iter(*this);
+			--m_index;
+			return iter;
+		}
+
+		//! Moves iterator \a offset positions forward.
+		_DeviceArrayIterator<T> &operator+=(difference_type offset) {
+			m_index += offset;
+			return *this;
+		}
+
+		//! Returns an iterator that pointing to a position \a offset positions forward of this iterator.
+		_DeviceArrayIterator<T> operator+(difference_type offset) const {
+			_DeviceArrayIterator<T> iter(*this);
+			return ( iter += offset);
+		}
+
+		//! Moves iterator \a offset positions backward.
+		_DeviceArrayIterator<T> &operator-=(difference_type offset) {
+			m_index -= offset;
+			return *this;
+		}
+
+		//! Returns an iterator that pointing to a position \a offset positions backward of this iterator.
+		_DeviceArrayIterator<T> operator-(difference_type offset) const {
+			_DeviceArrayIterator<T> iter(*this);
+			return ( iter -= offset);
+		}
+	};
+
+
 	//! Array stored on an OpenCL device.
 	template<class T>
 	class DeviceArray
 	{
 	protected:
 		cl::Buffer m_buffer;         //!< the allocated OpenCL buffer object.
-		size_t m_nElements;          //!< the number of elements in the array.
+		index_t m_nElements;         //!< the number of elements in the array.
 		DeviceController *m_devCon;  //!< the associated device controller.
 
 	public:
+		typedef _DeviceArrayIterator<T> iterator;
+
 		//! Constructs an invalid device array.
 		/**
 		 * The constructed device array is neither associated with an OpenCL buffer object nor a
@@ -37,7 +126,7 @@ namespace tbt
 		 *                    that will be used for creating the OpenCL buffer object; \a flags can be one of
 		 *                    CL_MEM_READ_WRITE, CL_MEM_READ_ONLY and CL_MEM_WRITE_ONLY.
 		 */
-		DeviceArray(DeviceController *devCon, size_t n, cl_mem_flags flags = CL_MEM_READ_WRITE)
+		DeviceArray(DeviceController *devCon, index_t n, cl_mem_flags flags = CL_MEM_READ_WRITE)
 			: m_buffer( devCon->getContext(), flags & (CL_MEM_READ_WRITE | CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY), n*sizeof(T) ),
 			  m_nElements(n),
 			  m_devCon(devCon)
@@ -67,9 +156,27 @@ namespace tbt
 		/**
 		 * @return the number of elements in this device array; will be 0 if the device array is invalid.
 		 */
-		size_t size() const {
+		index_t size() const {
 			return m_nElements;
 		}
+
+		//! Returns an iterator pointing to the first element in the array.
+		iterator begin() { return _DeviceArrayIterator<T>(0,this); }
+
+		//! Returns an iterator pointing to one past the last element in the array.
+		iterator end() { return _DeviceArrayIterator<T>(m_nElements,this); }
+
+		//! Returns an iterator pointing to the first element in the reversed array.
+		/**
+		 * The returned iterator also points to the last element in the array.
+		 */
+		iterator rbegin() { return _DeviceArrayIterator<T>(0,this); }
+
+		//! Returns an iterator pointing to one past the last element in the reversed array.
+		/**
+		 * The returned iterator also points to one before the first element in the array.
+		 */
+		iterator rend() { return _DeviceArrayIterator<T>(m_nElements,this); }
 
 
 		/** @name Transfering data between host and device

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <assert.h>
 
 
 #define RADIX 8
@@ -50,6 +51,13 @@ namespace tbt
 			m_kernelPrescanUpSweep   = createKernel("prescanUpSweep_gpu");
 			m_kernelPrescanDownSweep = createKernel("prescanDownSweep_gpu");
 		}
+	}
+
+
+	void RadixSort::run(DeviceArray<cl_uint>::iterator first, DeviceArray<cl_uint>::iterator last)
+	{
+		assert(first.getDeviceArray() == last.getDeviceArray());
+
 	}
 
 

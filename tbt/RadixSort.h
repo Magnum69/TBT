@@ -49,6 +49,8 @@ namespace tbt
 		//! Runs radix-sort for array \a a with \a n elements.
 		void run(DeviceArray<cl_uint> &devArray);
 
+		void run(DeviceArray<cl_uint>::iterator first, DeviceArray<cl_uint>::iterator last);
+
 		//! Returns total running time of counting kernels (in milliseconds).
 		double totalTimeKernelCounting         () const { return m_tKernelCounting; }
 
