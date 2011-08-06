@@ -10,7 +10,7 @@ namespace tbt
 
 	/**
 	 * \defgroup algorithm Algorithms
-	 * \brief These functions implement the algorithms available in TBT. They work on device arrays
+	 * \brief These classes and functions implement the algorithms available in TBT. They work on device arrays
 	 *        which determine on what device an algorithm is run.
 	 */
 

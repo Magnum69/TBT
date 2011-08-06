@@ -10,6 +10,9 @@ namespace tbt
 {
 
 	//! Radix-sort module.
+	/**
+	 * \ingroup algorithm
+	 */
 	class RadixSort : public Module
 	{
 		static cl::Kernel  m_kernelCounting;

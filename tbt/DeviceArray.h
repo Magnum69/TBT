@@ -290,6 +290,11 @@ namespace tbt
 		//! Iterator for device arrays.
 		typedef _DeviceArrayIterator<T> iterator;
 
+
+		/** @name Constructors
+		 */
+		//@{
+
 		//! Constructs an invalid device array.
 		/**
 		 * The constructed device array is neither associated with an OpenCL buffer object nor a
@@ -313,6 +318,15 @@ namespace tbt
 			  m_nElements(n),
 			  m_devCon(devCon)
 		{ }
+
+		//@}
+
+
+		/** @name General Information
+		 * These methods provide access to the associated device controller and the created OpenCL buffer object,
+		 * as well as the size of the array.
+		 */
+		//@{
 
 		//! Returns the device controller associated with this device array.
 		/**
@@ -341,6 +355,16 @@ namespace tbt
 		index_t size() const {
 			return m_nElements;
 		}
+
+		//@}
+
+
+		/** @name Iterators
+		 * These methods return iterators to specific positions in the device array. Please note that these
+		 * iterators do not provide access to the elements they point to, since the array is actually
+		 * stored on an OpenCL device and must first be transfered to host memory for accessing the data.
+		 */
+		//@{
 
 		//! Returns an iterator pointing to the first element in the array.
 		iterator begin() { return iterator(0,this); }
@@ -377,6 +401,14 @@ namespace tbt
 		 * The returned iterator also points to one before the first element in the array.
 		 */
 		const_iterator rend() const { return const_iterator(m_nElements,this); }
+
+		//! Returns an iterator pointing to the <i>i</i>-th element in the array.
+		iterator at(index_t i) { return iterator(i,this); }
+
+		//! Returns a const-iterator pointing to the <i>i</i>-th element in the array.
+		const_iterator at(index_t i) const { return const_iterator(i,this); }
+
+		//@}
 
 
 		/** @name Transfering data between host and device

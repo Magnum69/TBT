@@ -8,6 +8,9 @@
 namespace tbt
 {
 	//! Device controller encapsulating a device with a command queue.
+	/**
+	 * \ingroup context
+	 */
 	class DeviceController
 	{
 		cl::Device       m_device;  //!< the associated device.
@@ -20,8 +23,15 @@ namespace tbt
 		cl_ulong       m_localMemSize;      //!< the size of the local memory arena on the associated device.
 		cl_bool        m_hostUnifiedMemory; //!< has the device and the host a unified memory subsystem?
 		cl_uint        m_memBaseAddrAlign;  //!< the minimum alignment of memory base addresses.
+		cl_command_queue_properties m_scqProperties; //!< the supported command-queue properties supported by the associated device.
 
 	public:
+		/** @name Constructor
+		 *  Device controllers are usually constructed by the class Global when creating a global context,
+		 * so it is not necessary to construct a device controller manually.
+		 */
+		//@{
+
 		//! Constructs a device controller for \a device and \a context.
 		/**
 		 * @param[in] device      a valid OpenCL device in \a context that will be associated with this device controller.
@@ -29,6 +39,15 @@ namespace tbt
 		 * @param[in] properties  properties set of the created command queue for \a device.
 		 */
 		DeviceController(cl::Device device, cl::Context context, cl_command_queue_properties properties = 0);
+
+		//@}
+
+
+		/** @name Underlying OpenCL Objects
+		 *  These methods provide access to the underlying OpenCL objects, namely the associated OpenCL device and context,
+		 *  and the created command queue.
+		 */
+		//@{
 
 		//! Returns the associated OpenCL device.
 		/**
@@ -48,9 +67,13 @@ namespace tbt
 		 */
 		cl::Context getContext() const { return m_context; }
 
+		//@}
 
-		/** @name Device information methods
+
+		/** @name Device Information
 		 *  These methods return information about the device associated with this device controller.
+		 *  Some important information are already queried and cached when a device controller is constructed,
+		 *  other information are queried at request.
 		 */
 		//@{
 
@@ -65,6 +88,18 @@ namespace tbt
 		 * @return the name (CL_DEVICE_NAME) of the device associated with this device controller.
 		 */
 		std::string getName() const;
+
+		//! Returns the vendor name of the associated OpenCL device.
+		/**
+		 * @return the vendor name (CL_DEVICE_VENDOR) of the device associated with this device controller.
+		 */
+		std::string getVendor() const;
+
+		//! Returns the vendor ID of the associated OpenCL device.
+		/**
+		 * @return the vendor ID (CL_DEVICE_VENDOR_ID) of the device associated with this device controller.
+		 */
+		cl_uint getVendorID() const;
 
 		//! Returns the number of parallel compute units on the associated OpenCL device.
 		/**
@@ -99,10 +134,18 @@ namespace tbt
 		 */
 		cl_uint getMemBaseAddrAlign() const { return m_memBaseAddrAlign; }
 
+		//! Returns the supported command-queue properties of the associated device.
+		/**
+		 * @return the supported command-queue properties (CL_DEVICE_QUEUE_PROPERTIES)
+		 *         of the device associated with this device controller. These may differ from the
+		 *         properties of the command-queue of this device controller.
+		 */
+		cl_command_queue_properties getSupportedCommandQueueProperties() const { return m_scqProperties; }
+
 		//@}
 
 
-		/** @name Command queue methods
+		/** @name Command Queue
 		 *  These methods enqueue commands to the command queue for the device associated with this
 		 *  device controller, or perform a flush or finish on this command queue.
 		 */

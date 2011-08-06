@@ -8,6 +8,14 @@
 namespace tbt
 {
 
+	/**
+	 * \defgroup context Global Configuration
+	 * \brief These classes and functions allow to select the global platform and context, and provide access to
+	 *        platform, context, and device controllers.
+	 */
+	//@{
+
+
 	//! Maintenance of global platform and context, as well as some options.
 	class Global
 	{
@@ -60,13 +68,6 @@ namespace tbt
 		DeviceController *getGPUDeviceController() { return (m_gpuDeviceIndex >= 0) ? m_devCons[m_gpuDeviceIndex] : 0; }
 	};
 
-
-	/**
-	 * \defgroup context Platform and Context
-	 * \brief These functions allow to select the global platform and context, and provide access to
-	 *        platform, context, and device controllers.
-	 */
-	//@{
 
 	//! The (one and only) global configuration object.
 	extern Global globalConfig;

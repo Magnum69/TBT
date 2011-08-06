@@ -15,6 +15,7 @@ namespace tbt
 		device.getInfo(CL_DEVICE_LOCAL_MEM_SIZE,      &m_localMemSize);
 		device.getInfo(CL_DEVICE_HOST_UNIFIED_MEMORY, &m_hostUnifiedMemory);
 		device.getInfo(CL_DEVICE_MEM_BASE_ADDR_ALIGN, &m_memBaseAddrAlign);
+		device.getInfo(CL_DEVICE_QUEUE_PROPERTIES,    &m_scqProperties);
 	}
 
 
@@ -23,6 +24,22 @@ namespace tbt
 		std::string name;
 		m_device.getInfo(CL_DEVICE_NAME, &name);
 		return name;
+	}
+
+
+	std::string DeviceController::getVendor() const
+	{
+		std::string vendor;
+		m_device.getInfo(CL_DEVICE_VENDOR, &vendor);
+		return vendor;
+	}
+
+
+	cl_uint DeviceController::getVendorID() const
+	{
+		cl_uint id;
+		m_device.getInfo(CL_DEVICE_VENDOR_ID, &id);
+		return id;
 	}
 
 
