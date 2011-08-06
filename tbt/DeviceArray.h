@@ -126,6 +126,21 @@ namespace tbt
 			_DeviceArrayConstIterator<T> iter(*this);
 			return ( iter -= offset);
 		}
+
+		//! Returns the difference between two iterators.
+		/**
+		 * \pre This const-iterator and \a iter must both be valid and point to the same device array.
+		 *
+		 * @param iter must be a valid const-iterator pointing to the same device array as this const-iterator.
+		 * @return the difference between the two iterators, i.e., the number of elements in the
+		 *         interval [this iterator, \a iter); this difference will be 0 if both iterators
+		 *         point to the same position, and negative if \a iter points to a position before the
+		 *         position this iterator points to.
+		 */
+		difference_type operator-(const _DeviceArrayConstIterator<T> &iter) const {
+			return m_index - iter.m_index;
+		}
+
 	};
 
 
@@ -241,6 +256,21 @@ namespace tbt
 			_DeviceArrayIterator<T> iter(*this);
 			return ( iter -= offset);
 		}
+
+		//! Returns the difference between two iterators.
+		/**
+		 * \pre This iterator and \a iter must both be valid and point to the same device array.
+		 *
+		 * @param iter must be a valid iterator pointing to the same device array as this iterator.
+		 * @return the difference between the two iterators, i.e., the number of elements in the
+		 *         interval [this iterator, \a iter); this difference will be 0 if both iterators
+		 *         point to the same position, and negative if \a iter points to a position before the
+		 *         position this iterator points to.
+		 */
+		difference_type operator-(const _DeviceArrayConstIterator<T> &iter) const {
+			return m_index - iter.m_index;
+		}
+
 	};
 
 
