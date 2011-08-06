@@ -33,13 +33,13 @@ namespace tbt
 		void createContext(cl_device_type deviceType, const cl::Platform &platform, cl_command_queue_properties properties = 0);
 
 		//! Returns current setting of option cacheProgramBinaries.
-		bool getCacheProgramBinaries() { return m_cacheProgramBinaries; }
+		bool getCacheProgramBinaries() const { return m_cacheProgramBinaries; }
 
 		//! Sets option cacheProgramBinaries to \a b.
 		void setCacheProgramBinaries(bool b) { m_cacheProgramBinaries = b; }
 
 		//! Returns current setting of option recompileProgramsIfNewerDriver.
-		bool getRecompileProgramsIfNewerDriver() { return m_recompileProgramsIfNewerDriver; }
+		bool getRecompileProgramsIfNewerDriver() const { return m_recompileProgramsIfNewerDriver; }
 
 		//! Sets option recompileProgramsIfNewerDriver to \a b.
 		void setRecompileProgramsIfNewerDriver(bool b) { m_recompileProgramsIfNewerDriver = b; }

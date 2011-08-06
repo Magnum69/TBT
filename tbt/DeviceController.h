@@ -34,7 +34,7 @@ namespace tbt
 		/**
 		 * @return the device associated with this device controller.
 		 */
-		cl::Device getDevice() { return m_device; }
+		cl::Device getDevice() const { return m_device; }
 
 		//! Returns the command queue.
 		/**
@@ -46,7 +46,7 @@ namespace tbt
 		/**
 		 * @return the context associated with this device controller.
 		 */
-		cl::Context getContext() { return m_context; }
+		cl::Context getContext() const { return m_context; }
 
 
 		/** @name Device information methods
