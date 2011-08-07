@@ -138,6 +138,10 @@ int main(int argc, char *argv[])
 		//tbt::HostArray<cl_uint> a(n);
 		tbt::MappedArray<cl_uint> a(devCon, n);
 		initRandom(a);
+		tbt::MappedArray<cl_uint>::const_iterator it = a.begin();
+		tbt::MappedArray<cl_uint>::const_iterator it2;
+		it2 = it;
+		const cl_uint &x = *it;
 
 		tbt::HostArray<cl_uint> c(n);
 		for(size_t i = 0; i < n; ++i)
