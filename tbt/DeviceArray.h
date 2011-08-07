@@ -266,26 +266,52 @@ namespace tbt
 
 	protected:
 
-		//! Constructs an const-iterator pointing to \a index in \a devArray.
+		//! Constructs a const-iterator pointing to \a index in \a devArray.
 		/**
 		 * This constructor can only be called from class DeviceArray.
 		 */
 		_DeviceArrayConstIterator(index_t index, const DeviceArray<T> *devArray) : m_index(index), m_devArray(devArray) { }
 
+		//! Returns the index of the position in the device array this iterator points to.
 		index_t getIndex() const { return m_index; }
 
 	public:
+		//! Shorthand for this iterator type.
+		typedef _DeviceArrayConstIterator<T> _MyIter;
+
 		//! The type for iterator differences.
 		typedef typename DeviceArray<T>::difference_type difference_type;
+
+
+		/** @name Construction and Assignment
+		 * These constructors just provide a default constructor (creating an invalid iterator)
+		 * and copy constructors. To create an iterator pointing to a specific position in a
+		 * device array, use the methods provided by DeviceArray.
+		 */
+		//@{
 
 		//! Constructs an invalid const-iterator.
 		_DeviceArrayConstIterator() : m_index(0), m_devArray(0) { }
 
 		//! Copy constructor. Constructs a const-iterator pointing to the same position as \a iter.
-		_DeviceArrayConstIterator(const _DeviceArrayConstIterator<T> &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
+		_DeviceArrayConstIterator(const _MyIter &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
 
 		//! Constructs a const-iterator pointing to the same position as iterator \a iter.
 		_DeviceArrayConstIterator(const _DeviceArrayIterator<T> &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
+
+		//! Assignment operator.
+		_MyIter &operator=(const _MyIter &iter) {
+			m_index    = iter.m_index;
+			m_devArray = iter.m_devArray;
+			return *this;
+		}
+
+		//@}
+
+
+		/** @name Information Methods
+		 */
+		//@{
 
 		//! Returns the device array this iterator points to.
 		/**
@@ -293,18 +319,20 @@ namespace tbt
 		 */
 		const DeviceArray<T> *getDeviceArray() const { return m_devArray; }
 
-		//! Assignment operator.
-		_DeviceArrayConstIterator<T> &operator=(const _DeviceArrayConstIterator<T> &iter) {
-			m_index    = iter.m_index;
-			m_devArray = iter.m_devArray;
-			return *this;
-		}
+		//@}
+
+
+		/** @name Operators for Moving Iterators
+		 * These methods move an iterator forward or backward, or create a new iterator that points to a position
+		 * which is a specific number of elements before or after.
+		 */
+		//@{
 
 		//! Moves iterator one position forward (pre-increment).
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> &operator++() {
+		_MyIter &operator++() {
 			++m_index;
 			return *this;
 		}
@@ -313,8 +341,8 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> operator++(int) {
-			_DeviceArrayConstIterator<T> iter(*this);
+		_MyIter operator++(int) {
+			_MyIter iter(*this);
 			++m_index;
 			return iter;
 		}
@@ -323,7 +351,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> &operator--() {
+		_MyIter &operator--() {
 			--m_index;
 			return *this;
 		}
@@ -332,7 +360,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> operator--(int) {
+		_MyIter operator--(int) {
 			_DeviceArrayConstIterator<T> iter(*this);
 			--m_index;
 			return iter;
@@ -342,7 +370,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> &operator+=(difference_type offset) {
+		_MyIter &operator+=(difference_type offset) {
 			m_index += offset;
 			return *this;
 		}
@@ -351,7 +379,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> operator+(difference_type offset) const {
+		_MyIter operator+(difference_type offset) const {
 			_DeviceArrayConstIterator<T> iter(*this);
 			return ( iter += offset);
 		}
@@ -360,7 +388,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> &operator-=(difference_type offset) {
+		_MyIter &operator-=(difference_type offset) {
 			m_index -= offset;
 			return *this;
 		}
@@ -369,7 +397,7 @@ namespace tbt
 		/**
 		 * \pre This const-iterator must be valid.
 		 */
-		_DeviceArrayConstIterator<T> operator-(difference_type offset) const {
+		_MyIter operator-(difference_type offset) const {
 			_DeviceArrayConstIterator<T> iter(*this);
 			return ( iter -= offset);
 		}
@@ -384,10 +412,63 @@ namespace tbt
 		 *         point to the same position, and negative if \a iter points to a position before the
 		 *         position this iterator points to.
 		 */
-		difference_type operator-(const _DeviceArrayConstIterator<T> &iter) const {
+		difference_type operator-(const _MyIter &iter) const {
 			return m_index - iter.m_index;
 		}
 
+		//@}
+
+
+		/** @name Operators for Comparing Iterators
+		 * These operators compare iterators for equality / inequality, or for the relative position
+		 * of the elements they point to. The latter compare operators can only be called if the
+		 * two iterators to be compared are both valid and point to the same device array.
+		 */
+		//@{
+
+		//! Returns true if \a right points to the same position as this iterator; false otherwise.
+		bool operator==(const _MyIter &right) const {
+			return ( m_index == right.m_index && m_devArray == right.m_devArray );
+		}
+
+		//! Returns true if \a right points to a different position as this iterator; false otherwise.
+		bool operator!=(const _MyIter &right) const {
+			return ( m_index != right.m_index || m_devArray != right.m_devArray );
+		}
+
+		//! Returns true if this iterator points to a position before the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator<(const _MyIter &right) const {
+			return ( m_index < right.m_index );
+		}
+
+		//! Returns true if this iterator points to the same position or a position before the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator<=(const _MyIter &right) const {
+			return ( m_index <= right.m_index );
+		}
+
+		//! Returns true if this iterator points to a position after the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator>(const _MyIter &right) const {
+			return ( m_index > right.m_index );
+		}
+
+		//! Returns true if this iterator points to the same position or a position after the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator>=(const _MyIter &right) const {
+			return ( m_index >= right.m_index );
+		}
+
+		//@}
 	};
 
 
@@ -410,14 +491,38 @@ namespace tbt
 		_DeviceArrayIterator(index_t index, DeviceArray<T> *devArray) : m_index(index), m_devArray(devArray) { }
 
 	public:
+		//! Shorthand for this iterator type.
+		typedef _DeviceArrayIterator<T> _MyIter;
+
 		//! The type for iterator differences.
 		typedef typename DeviceArray<T>::difference_type difference_type;
+
+
+		/** @name Construction and Assignment
+		 * These constructors just provide a default constructor (creating an invalid iterator)
+		 * and copy constructors. To create an iterator pointing to a specific position in a
+		 * device array, use the methods provided by DeviceArray.
+		 */
+		//@{
 
 		//! Constructs an invalid iterator.
 		_DeviceArrayIterator() : m_index(0), m_devArray(0) { }
 
 		//! Copy constructor. Constructs an iterator pointing to the same position as \a iter.
-		_DeviceArrayIterator(const _DeviceArrayIterator<T> &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
+		_DeviceArrayIterator(const _MyIter &iter) : m_index(iter.m_index), m_devArray(iter.m_devArray) { }
+
+		//! Assignment operator.
+		_MyIter &operator=(const _MyIter &iter) {
+			m_index    = iter.m_index;
+			m_devArray = iter.m_devArray;
+			return *this;
+		}
+
+		//@}
+
+		/** @name Information Methods
+		 */
+		//@{
 
 		//! Returns the device array this iterator points to.
 		/**
@@ -425,18 +530,20 @@ namespace tbt
 		 */
 		DeviceArray<T> *getDeviceArray() { return m_devArray; }
 
-		//! Assignment operator.
-		_DeviceArrayIterator<T> &operator=(const _DeviceArrayIterator<T> &iter) {
-			m_index    = iter.m_index;
-			m_devArray = iter.m_devArray;
-			return *this;
-		}
+		//@}
+
+
+		/** @name Operators for Moving Iterators
+		 * These methods move an iterator forward or backward, or create a new iterator that points to a position
+		 * which is a specific number of elements before or after.
+		 */
+		//@{
 
 		//! Moves iterator one position forward (pre-increment).
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> &operator++() {
+		_MyIter &operator++() {
 			++m_index;
 			return *this;
 		}
@@ -445,8 +552,8 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> operator++(int) {
-			_DeviceArrayIterator<T> iter(*this);
+		_MyIter operator++(int) {
+			_MyIter iter(*this);
 			++m_index;
 			return iter;
 		}
@@ -455,7 +562,7 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> &operator--() {
+		_MyIter &operator--() {
 			--m_index;
 			return *this;
 		}
@@ -464,8 +571,8 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> operator--(int) {
-			_DeviceArrayIterator<T> iter(*this);
+		_MyIter operator--(int) {
+			_MyIter iter(*this);
 			--m_index;
 			return iter;
 		}
@@ -474,7 +581,7 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> &operator+=(difference_type offset) {
+		_MyIter &operator+=(difference_type offset) {
 			m_index += offset;
 			return *this;
 		}
@@ -483,8 +590,8 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> operator+(difference_type offset) const {
-			_DeviceArrayIterator<T> iter(*this);
+		_MyIter operator+(difference_type offset) const {
+			_MyIter iter(*this);
 			return ( iter += offset );
 		}
 
@@ -492,7 +599,7 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> &operator-=(difference_type offset) {
+		_MyIter &operator-=(difference_type offset) {
 			m_index -= offset;
 			return *this;
 		}
@@ -501,8 +608,8 @@ namespace tbt
 		/**
 		 * \pre This iterator must be valid.
 		 */
-		_DeviceArrayIterator<T> operator-(difference_type offset) const {
-			_DeviceArrayIterator<T> iter(*this);
+		_MyIter operator-(difference_type offset) const {
+			_MyIter iter(*this);
 			return ( iter -= offset);
 		}
 
@@ -516,9 +623,62 @@ namespace tbt
 		 *         point to the same position, and negative if \a iter points to a position before the
 		 *         position this iterator points to.
 		 */
-		difference_type operator-(const _DeviceArrayConstIterator<T> &iter) const {
+		difference_type operator-(const _MyIter &iter) const {
 			return m_index - iter.m_index;
 		}
+
+		//@}
+
+		/** @name Operators for Comparing Iterators
+		 * These operators compare iterators for equality / inequality, or for the relative position
+		 * of the elements they point to. The latter compare operators can only be called if the
+		 * two iterators to be compared are both valid and point to the same device array.
+		 */
+		//@{
+
+		//! Returns true if \a right points to the same position as this iterator; false otherwise.
+		bool operator==(const _MyIter &right) const {
+			return ( m_index == right.m_index && m_devArray == right.m_devArray );
+		}
+
+		//! Returns true if \a right points to a different position as this iterator; false otherwise.
+		bool operator!=(const _MyIter &right) const {
+			return ( m_index != right.m_index || m_devArray != right.m_devArray );
+		}
+
+		//! Returns true if this iterator points to a position before the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator<(const _MyIter &right) const {
+			return ( m_index < right.m_index );
+		}
+
+		//! Returns true if this iterator points to the same position or a position before the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator<=(const _MyIter &right) const {
+			return ( m_index <= right.m_index );
+		}
+
+		//! Returns true if this iterator points to a position after the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator>(const _MyIter &right) const {
+			return ( m_index > right.m_index );
+		}
+
+		//! Returns true if this iterator points to the same position or a position after the position \a right points to.
+		/**
+		 * \pre \a both right and this iterator must be valid and point to the same array.
+		 */
+		bool operator>=(const _MyIter &right) const {
+			return ( m_index >= right.m_index );
+		}
+
+		//@}
 
 	};
 
@@ -536,16 +696,16 @@ namespace tbt
 	typename DeviceArray<T>::const_iterator DeviceArray<T>::end() const { return const_iterator(m_nElements,this); }
 
 	template<class T> inline
-	typename DeviceArray<T>::iterator DeviceArray<T>::rbegin() { return iterator(0,this); }
+	typename DeviceArray<T>::iterator DeviceArray<T>::rbegin() { return iterator(m_nElements-1,this); }
 
 	template<class T> inline
-	typename DeviceArray<T>::const_iterator DeviceArray<T>::rbegin() const { return const_iterator(0,this); }
+	typename DeviceArray<T>::const_iterator DeviceArray<T>::rbegin() const { return const_iterator(m_nElements-1,this); }
 
 	template<class T> inline
-	typename DeviceArray<T>::iterator DeviceArray<T>::rend() { return iterator(m_nElements,this); }
+	typename DeviceArray<T>::iterator DeviceArray<T>::rend() { return iterator(-1,this); }
 
 	template<class T> inline
-	typename DeviceArray<T>::const_iterator DeviceArray<T>::rend() const { return const_iterator(m_nElements,this); }
+	typename DeviceArray<T>::const_iterator DeviceArray<T>::rend() const { return const_iterator(-1,this); }
 
 	template<class T> inline
 	typename DeviceArray<T>::iterator DeviceArray<T>::at(index_t i) { return iterator(i,this); }
