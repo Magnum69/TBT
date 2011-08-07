@@ -14,6 +14,9 @@ namespace tbt
 
 
 	//! Array mapped to an OpenCL device.
+	/**
+	 * \ingroup memobjects
+	 */
 	template<class T>
 	class MappedArray : public DeviceArray<T>
 	{
@@ -193,6 +196,9 @@ namespace tbt
 
 
 	//! Const-iterator for mapped arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _MappedArrayConstIterator : public _DeviceArrayConstIterator<T>
 	{
@@ -239,6 +245,9 @@ namespace tbt
 
 
 	//! Iterator for mapped arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _MappedArrayIterator : public _DeviceArrayIterator<T>
 	{

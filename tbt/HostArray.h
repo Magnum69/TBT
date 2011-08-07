@@ -13,6 +13,9 @@ namespace tbt
 
 	//! Array stored on the host.
 	/**
+	 * \ingroup memobjects
+	 */
+	/**
 	 * This class implements generic arrays with auomatic allocation and deallocation of memory,
 	 * supporting random access to the elements using the array-operator []. It is also possible
 	 * construct arrays for 0 elements; in this case no memory is allocated. The usual copy
@@ -180,6 +183,9 @@ namespace tbt
 
 
 	//! Const-iterator for host arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _HostArrayConstIterator
 	{
@@ -392,6 +398,9 @@ namespace tbt
 
 
 	//! Const-iterator for host arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _HostArrayIterator
 	{

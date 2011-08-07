@@ -43,6 +43,24 @@
  */
 
 
+/**
+ * \defgroup context Global Configuration
+ * \brief These classes and functions allow to select the global platform and context, and provide access to
+ *        platform, context, and device controllers.
+ *
+ * \defgroup memobjects Memory Objects
+ * \brief These classes implement high-level memory objects representing
+ *        arrays on a device, the host, or both.
+ *
+ * \defgroup iterators Iterators
+ * \brief These classes represent iterators pointing into memory objects.
+ *
+ * \defgroup algorithm Algorithms
+ * \brief These classes and functions implement the algorithms available in TBT. They work on device arrays
+ *        which determine on what device an algorithm is run.
+ */
+
+
 #define __NO_STD_VECTOR             // Use cl::vector instead of STL version
 #define __CL_ENABLE_EXCEPTIONS      // use exceptions
 #pragma warning( disable : 4290 )   // avoid useless warnings with Visual C++ and OpenCL exceptions

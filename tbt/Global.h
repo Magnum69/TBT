@@ -9,9 +9,7 @@ namespace tbt
 {
 
 	/**
-	 * \defgroup context Global Configuration
-	 * \brief These classes and functions allow to select the global platform and context, and provide access to
-	 *        platform, context, and device controllers.
+	 * \addtogroup context
 	 */
 	//@{
 

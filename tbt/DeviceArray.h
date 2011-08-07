@@ -13,6 +13,9 @@ namespace tbt
 	template<class T> class _DeviceArrayIterator;
 
 	//! Array stored on an OpenCL device.
+	/**
+	 * \ingroup memobjects
+	 */
 	template<class T>
 	class DeviceArray
 	{
@@ -256,6 +259,9 @@ namespace tbt
 
 
 	//! Const-iterator for device arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _DeviceArrayConstIterator
 	{
@@ -473,6 +479,9 @@ namespace tbt
 
 
 	//! Iterator for device arrays.
+	/**
+	 * \ingroup iterators
+	 */
 	template<class T>
 	class _DeviceArrayIterator
 	{

@@ -8,13 +8,6 @@
 namespace tbt
 {
 
-	/**
-	 * \defgroup algorithm Algorithms
-	 * \brief These classes and functions implement the algorithms available in TBT. They work on device arrays
-	 *        which determine on what device an algorithm is run.
-	 */
-
-
 	//! Sorts a device array with radix-sort.
 	/**
 	 * @tparam T         is the data type to be sorted. Allowed types are (at the moment) only cl_uint.
