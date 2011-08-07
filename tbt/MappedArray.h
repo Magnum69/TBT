@@ -206,6 +206,7 @@ namespace tbt
 		_MappedArrayConstIterator(index_t index, const MappedArray<T> *mappedArray) : _DeviceArrayConstIterator(index,mappedArray) { }
 
 	public:
+		//! The reference type for this iterator.
 		typedef typename MappedArray<T>::const_reference reference;
 
 		//! Constructs an invalid const-iterator.
@@ -292,16 +293,16 @@ namespace tbt
 	typename MappedArray<T>::const_iterator MappedArray<T>::end() const { return const_iterator(m_nElements,this); }
 
 	template<class T> inline
-	typename MappedArray<T>::iterator MappedArray<T>::rbegin() { return iterator(0,this); }
+	typename MappedArray<T>::iterator MappedArray<T>::rbegin() { return iterator(m_nElements-1,this); }
 
 	template<class T> inline
-	typename MappedArray<T>::const_iterator MappedArray<T>::rbegin() const { return const_iterator(0,this); }
+	typename MappedArray<T>::const_iterator MappedArray<T>::rbegin() const { return const_iterator(m_nElements-1,this); }
 
 	template<class T> inline
-	typename MappedArray<T>::iterator MappedArray<T>::rend() { return iterator(m_nElements,this); }
+	typename MappedArray<T>::iterator MappedArray<T>::rend() { return iterator(-1,this); }
 
 	template<class T> inline
-	typename MappedArray<T>::const_iterator MappedArray<T>::rend() const { return const_iterator(m_nElements,this); }
+	typename MappedArray<T>::const_iterator MappedArray<T>::rend() const { return const_iterator(-1,this); }
 
 	template<class T> inline
 	typename MappedArray<T>::iterator MappedArray<T>::at(index_t i) { return iterator(i,this); }
