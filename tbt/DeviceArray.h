@@ -11,6 +11,8 @@ namespace tbt
 
 	template<class T> class _DeviceArrayConstIterator;
 	template<class T> class _DeviceArrayIterator;
+	template<class T> class MappedArray;
+
 
 	//! Array stored on an OpenCL device.
 	/**
@@ -155,104 +157,196 @@ namespace tbt
 		//@}
 
 
-		/** @name Transfering data between host and device
-		 *  These methods load data from host to device memory, or store the data in device memory
-		 *  in host memory. They enqueue read- and write-buffer commands to the command queue
-		 *  for the associated device.
+		/** @name Transfering Data from Host to Device Memory
+		 *  These methods load data from host memory onto the device. They enqueue read- and write-buffer
+		 *  commands to the command queue for the associated device. The methods ending with <em>Blocking</em>
+		 *  only return once the memory transfer is complete; the other methods just enqueue a command
+		 *  for transfering the data (an event object can be used to wait for completion).
 		 */
 		//@{
 
 		//! Loads data from C-array \a ptr onto the device.
 		/**
-		 * This methods enqueues a blocking write-buffer command. Once this method returns, the memory
+		 * This method enqueues a blocking write-buffer command. Once this method returns, the memory
 		 * transfer to the device is completed.
 		 *
 		 * @param[in] ptr  must point to an allocated region of memory that is large enough to store the whole array.
 		 */
-		void loadFromBlocking(const T *ptr) {
+		void loadBlocking(const T *ptr) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
 		}
 
-		//! Loads data from host array \a a onto the device.
+		//! Loads data from host array \a ha onto the device.
 		/**
-		 * This methods enqueues a blocking write-buffer command. Once this method returns, the memory
+		 * This method enqueues a blocking write-buffer command. Once this method returns, the memory
 		 * transfer to the device is completed.
 		 *
 		 * @param[in] ha  must be a host array that is large enough to store the whole array.
 		 */
-		void loadFromBlocking(const HostArray<T> &ha) {
+		void loadBlocking(const HostArray<T> &ha) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ha[0]);
+		}
+
+		//! Loads data from mapped array \a ma onto the device.
+		/**
+		 * This method enqueues a blocking write-buffer command. Once this method returns, the memory
+		 * transfer to the device is completed.
+		 *
+		 * @param[in] ma  must be a mapped array that is large enough to store the whole array.
+		 */
+		void loadBlocking(const MappedArray<T> &ma);
+
+		//! Loads the subarray [\a first, \a last) from host memory to the subarray starting at \a firstDev onto the device.
+		/**
+		 * This method enqueues a blocking write-buffer command. Once this method returns, the memory
+		 * transfer to the device is completed. The method copies the elements in [\a first, \a last) to
+		 * [\a firstDev, \a firstDev+(\a last-\a first)) in the device array,
+		 *
+		 * \pre \a \a first and \a last must be valid iterators pointing to the same array, and
+		 *      \a firstDev must be a valid iterator pointing to this device array.
+		 *
+		 * @tparam    _ITER    must be a random access iterator for an array (i.e., the elements must be stored consecutively).
+		 *                     Possible iterator types are, e.g., const-iterators for host or mapped arrays, or pointers to C-arrays.
+		 * @param[in] first    is an iterator pointing to the first element in the subarray to be loaded.
+		 * @param[in] last     is an iterator pointing to the one-past-last element in the subarray to be loaded.
+		 * @param[in] firstDev is an iterator pointing to the starting position, where the subarray is stored in this device array.
+		 */
+		template<class _ITER>
+		void loadBlocking(iterator first, iterator last, _ITER firstSrc) {
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, first.m_index * sizeof(T), (last-first) * sizeof(T), &*firstSrc);
 		}
 
 		//! Enqueues a command for loading data from a C-array \a ptr onto the device.
 		/**
-		 * This methods enqueues a non-blocking write-buffer command and returns an event object associated with
+		 * This method enqueues a non-blocking write-buffer command and returns an event object associated with
 		 * this write command that can be queried (or waited for).
 		 *
 		 * @param[in]     ptr         must point to an allocated region of memory that is large enough to store the whole array.
 		 * @param[in,out] eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
-		void loadFrom(const T *ptr, cl::Event *eventLoad = 0) {
+		void load(const T *ptr, cl::Event *eventLoad = 0) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventLoad);
 		}
 
-		//! Enqueues a command for loading data from host array \a a onto the device.
+		//! Enqueues a command for loading data from host array \a ha onto the device.
 		/**
-		 * This methods enqueues a non-blocking write-buffer command and returns an event object associated with
+		 * This method enqueues a non-blocking write-buffer command and returns an event object associated with
 		 * this write command that can be queried (or waited for).
 		 *
 		 * @param[in]     ha          must be a host array that is large enough to store the whole array.
 		 * @param[in,out] eventLoad   if not 0, returns an event object that identifies the write command.
 		 */
-		void loadFrom(const HostArray<T> &ha, cl::Event *eventLoad = 0) {
+		void load(const HostArray<T> &ha, cl::Event *eventLoad = 0) {
 			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ha[0], 0, eventLoad);
 		}
 
+		//! Enqueues a command for loading data from mapped array \a ma onto the device.
+		/**
+		 * This method enqueues a non-blocking write-buffer command and returns an event object associated with
+		 * this write command that can be queried (or waited for).
+		 *
+		 * @param[in]     ma          must be a mapped array that is large enough to store the whole array.
+		 * @param[in,out] eventLoad   if not 0, returns an event object that identifies the write command.
+		 */
+		void load(const MappedArray<T> &ma, cl::Event *eventLoad = 0);
+
+		//! Enqueues a command for loading the subarray [\a first, \a last) from host memory at \a firstDev onto the device.
+		/**
+		 * This method enqueues a non-blocking write-buffer command and returns an event object associated with
+		 * this write command that can be queried (or waited for). The command copies \ m := \a last-\a first elements in
+		 * [\a firstSrc, \a firstSrc+\ m) to [\a first, \a last) in the device array,
+		 *
+		 * \pre \a \a first and \a last must be valid iterators pointing to this device array, and
+		 *      \a firstSrc must be a valid iterator pointing to an array.
+		 *
+		 * @tparam        _ITER      must be an array iterator (i.e., the elements must be stored consecutively).
+		 *                           Possible iterator types are, e.g., const-iterators for host or mapped arrays, or pointers to C-arrays.
+		 * @param[in]     first      is an iterator pointing to the first element in the subarray to be loaded.
+		 * @param[in]     last       is an iterator pointing to the one-past-last element in the subarray to be loaded.
+		 * @param[in]     firstDev   is an iterator pointing to the starting position, where the subarray is stored in this device array.
+		 * @param[in,out] eventLoad  if not 0, returns an event object that identifies the write command.
+		 */
+		template<class _ITER>
+		void load(iterator first, iterator last, _ITER firstSrc, cl::Event *eventLoad = 0)
+		{
+			m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE,
+				first.m_index * sizeof(T), (last-first) * sizeof(T), &*firstSrc, 0, eventLoad);
+		}
+
+		//@}
+
+		/** @name Transfering Data from Device to Host Memory
+		 *  These methods store data on the device in host memory. They enqueue read- and write-buffer
+		 *  commands to the command queue for the associated device. The methods ending with <em>Blocking</em>
+		 *  only return once the memory transfer is complete; the other methods just enqueue a command
+		 *  for transfering the data (an event object can be used to wait for completion).
+		 */
+		//@{
+
 		//! Stores the data on the device in C-array \a ptr.
 		/**
-		 * This methods enqueues a blocking read-buffer command. Once this method returns, the memory
+		 * This method enqueues a blocking read-buffer command. Once this method returns, the memory
 		 * transfer to the host is completed.
 		 *
 		 * @param[in,out] ptr  must point to an allocated region of memory that is large enough to hold the whole array.
 		 */
-		void storeToBlocking(T *ptr) {
+		void storeBlocking(T *ptr) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), ptr);
 		}
 
-		//! Stores the data on the device in host array \a a.
+		//! Stores the data on the device in host array \a ha.
 		/**
-		 * This methods enqueues a blocking read-buffer command. Once this method returns, the memory
+		 * This method enqueues a blocking read-buffer command. Once this method returns, the memory
 		 * transfer to the host is completed.
 		 *
 		 * @param[in,out] ha  must be a host array that is large enough to hold the whole array.
 		 */
-		void storeToBlocking(HostArray<T> &ha) {
+		void storeBlocking(HostArray<T> &ha) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ha[0]);
 		}
 
+		//! Stores the data on the device in mapped array \a ma.
+		/**
+		 * This method enqueues a blocking read-buffer command. Once this method returns, the memory
+		 * transfer to the host is completed.
+		 *
+		 * @param[in,out] ma  must be a mapped array that is large enough to hold the whole array.
+		 */
+		void storeBlocking(MappedArray<T> &ma);
+
 		//! Enqueues a command for storing the data on the device in C-array \a ptr.
 		/**
-		 * This methods enqueues a non-blocking read-buffer command and returns an event object associated with
+		 * This method enqueues a non-blocking read-buffer command and returns an event object associated with
 		 * this read command that can be queried (or waited for).
 		 *
 		 * @param[in,out] ptr          must point to an allocated region of memory that is large enough to hold the whole array.
 		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
 		 */
-		void storeTo(T *ptr, cl::Event *eventStore = 0) {
+		void store(T *ptr, cl::Event *eventStore = 0) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), ptr, 0, eventStore);
 		}
 
-		//! Enqueues a command for storing the data on the device in host array \a a.
+		//! Enqueues a command for storing the data on the device in host array \a ha.
 		/**
-		 * This methods enqueues a non-blocking read-buffer command and returns an event object associated with
+		 * This method enqueues a non-blocking read-buffer command and returns an event object associated with
 		 * this read command that can be queried (or waited for).
 		 *
 		 * @param[in,out] ha           must be a host array that is large enough to hold the whole array.
 		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
 		 */
-		void storeTo(HostArray<T> &ha, cl::Event *eventStore = 0) {
+		void store(HostArray<T> &ha, cl::Event *eventStore = 0) {
 			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ha[0], 0, eventStore);
 		}
+
+		//! Enqueues a command for storing the data on the device in mapped array \a ma.
+		/**
+		 * This method enqueues a non-blocking read-buffer command and returns an event object associated with
+		 * this read command that can be queried (or waited for).
+		 *
+		 * @param[in,out] ma           must be a mapped array that is large enough to hold the whole array.
+		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
+		 */
+		void store(MappedArray<T> &ma, cl::Event *eventStore = 0);
 
 		//@}
 	};
@@ -721,6 +815,36 @@ namespace tbt
 
 	template<class T> inline
 	typename DeviceArray<T>::const_iterator DeviceArray<T>::at(index_t i) const { return const_iterator(i,this); }
+
+}
+
+#include <tbt/MappedArray.h>
+
+namespace tbt {
+
+	template<class T> inline
+	void DeviceArray<T>::loadBlocking(const MappedArray<T> &ma)
+	{
+		m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ma[0]);
+	}
+
+	template<class T> inline
+	void DeviceArray<T>::load(const MappedArray<T> &ma, cl::Event *eventLoad)
+	{
+		m_devCon->getCommandQueue().enqueueWriteBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ma[0], 0, eventLoad);
+	}
+
+	template<class T> inline
+	void DeviceArray<T>::storeBlocking(MappedArray<T> &ma)
+	{
+		m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, 0, m_nElements*sizeof(T), &ma[0]);
+	}
+
+	template<class T> inline
+	void DeviceArray<T>::store(MappedArray<T> &ma, cl::Event *eventStore = 0)
+	{
+		m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, 0, m_nElements*sizeof(T), &ma[0], 0, eventStore);
+	}
 
 }
 
