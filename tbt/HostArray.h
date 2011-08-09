@@ -499,7 +499,7 @@ namespace tbt
 		 * \pre This const-iterator must be valid.
 		 */
 		_MyIter operator--(int) {
-			_DeviceArrayConstIterator<T> iter(*this);
+			_MyIter iter(*this);
 			--m_ptr;
 			return iter;
 		}
@@ -518,7 +518,7 @@ namespace tbt
 		 * \pre This const-iterator must be valid.
 		 */
 		_MyIter operator+(difference_type offset) const {
-			_DeviceArrayConstIterator<T> iter(*this);
+			_MyIter iter(*this);
 			return ( iter += offset);
 		}
 
@@ -536,7 +536,7 @@ namespace tbt
 		 * \pre This const-iterator must be valid.
 		 */
 		_MyIter operator-(difference_type offset) const {
-			_DeviceArrayConstIterator<T> iter(*this);
+			_MyIter iter(*this);
 			return ( iter -= offset);
 		}
 
