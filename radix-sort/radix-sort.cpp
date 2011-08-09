@@ -2,6 +2,7 @@
 
 #include <tbt/RadixSort.h>
 #include <tbt/MappedArray.h>
+#include <tbt/HostArray.h>
 #include <tbt/algorithm.h>
 
 #include <iostream>
@@ -146,6 +147,8 @@ int main(int argc, char *argv[])
 		tbt::HostArray<cl_uint> c(n);
 		for(size_t i = 0; i < n; ++i)
 			c[i] = a[i];
+
+		a.load(a.begin()+1, a.rbegin()-1, c.begin()+1);
 
 		if(outputMode == omVerbose) {
 			cout << "done." << endl;
