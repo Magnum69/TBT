@@ -60,7 +60,7 @@ namespace tbt
 				indexNvidia = i;
 		}
 
-		if(deviceType & (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU) && indexAMD == -1)
+		if((deviceType & (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU)) == (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU) && indexAMD == -1)
 			throw Error("No OpenCL platform for CPUs and GPUs found!", Error::ecNoOpenCLPlatformFound);
 		
 		if(deviceType & CL_DEVICE_TYPE_GPU && indexAMD == -1 && indexNvidia == -1)
@@ -69,7 +69,7 @@ namespace tbt
 		if(deviceType & CL_DEVICE_TYPE_CPU && indexAMD == -1 && indexIntel == -1)
 			throw Error("No OpenCL platform for CPUs found!", Error::ecNoOpenCLPlatformFound);
 
-		if(deviceType & (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU))
+		if((deviceType & (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU)) == (CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU))
 			return platformList[indexAMD];
 		else if(deviceType == CL_DEVICE_TYPE_GPU)
 			return platformList[(indexAMD != -1) ? indexAMD : indexNvidia];
