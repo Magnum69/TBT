@@ -176,6 +176,26 @@ namespace tbt
 			const cl::vector<cl::Event> *events = 0,
 			cl::Event *ev = 0);
 
+		//! Enqueues a command to execute a kernel on this device.
+		/**
+		 * @param[in]     kernel      is a valid kernel object. The OpenCL context associated with kernel and
+		 *                            this device must be the same.
+		 * @param[in]     events      specify events that need to complete before this particular command can be
+		 *                            executed. If \a events is 0 (the default), then this command does not
+		 *                            wait on any event to complete.
+		 * @param[in,out] ev          returns an event object that identifies this particular kernel execution
+		 *                            instance. If event is 0 (the default), no event will be created for this kernel
+		 *                            execution instance and therefore it will not be possible to query or queue a
+		 *                            wait for this kernel execution instance.
+		 */
+		void enqueueTask(
+			const cl::Kernel &kernel,
+			const cl::vector<cl::Event> *events = 0,
+			cl::Event *ev = 0)
+		{
+			m_queue.enqueueTask(kernel, events, ev);
+		}
+
 		//!	Issues all previously queued commands to the device.
 		void flush() { m_queue.flush(); }
 
