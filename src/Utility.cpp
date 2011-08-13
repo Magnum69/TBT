@@ -278,9 +278,13 @@ namespace tbt {
 		try {
 			program.build(devices);
 		} catch(cl::Error err) {
-			cerr << "Compiler error: " << err.what() << "(" << err.err() << ")" << endl;
-			string str =  program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-			throw Error("Could not compile kernels", Error::ecKernelCompileError);
+			if(err.err() == CL_BUILD_PROGRAM_FAILURE) {
+				string msg = "Could not compile kernels.\nBuild-Log:\n";
+				msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+				throw Error(msg.c_str(), Error::ecKernelCompileError);
+
+			} else
+				throw;
 		}
 
 		// cache binary file
