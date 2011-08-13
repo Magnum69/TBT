@@ -147,9 +147,11 @@
     <ClInclude Include="tbt\algorithm.h" />
     <ClInclude Include="tbt\DeviceArray.h" />
     <ClInclude Include="tbt\DeviceController.h" />
+    <ClInclude Include="tbt\DeviceStruct.h" />
     <ClInclude Include="tbt\Global.h" />
     <ClInclude Include="tbt\HostArray.h" />
     <ClInclude Include="tbt\MappedArray.h" />
+    <ClInclude Include="tbt\MappedStruct.h" />
     <ClInclude Include="tbt\RadixSort.h" />
     <ClInclude Include="tbt\tbthc.h" />
     <ClInclude Include="tbt\Error.h" />

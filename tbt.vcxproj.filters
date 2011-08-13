@@ -52,6 +52,12 @@
     <ClInclude Include="tbt\Utility.h">
       <Filter>Header files</Filter>
     </ClInclude>
+    <ClInclude Include="tbt\DeviceStruct.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="tbt\MappedStruct.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Module.cpp">

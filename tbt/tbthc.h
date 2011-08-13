@@ -49,8 +49,7 @@
  *        platform, context, and device controllers.
  *
  * \defgroup memobjects Memory Objects
- * \brief These classes implement high-level memory objects representing
- *        arrays on a device, the host, or both.
+ * \brief These classes implement high-level memory objects stored on the device, the host, or both.
  *
  * \defgroup iterators Iterators
  * \brief These classes represent iterators pointing into memory objects.
