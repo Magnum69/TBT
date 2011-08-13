@@ -158,10 +158,10 @@ namespace tbt
 
 
 		/** @name Transfering Data from Host to Device Memory
-		 *  These methods load data from host memory onto the device. They enqueue read- and write-buffer
-		 *  commands to the command queue for the associated device. The methods ending with <em>Blocking</em>
-		 *  only return once the memory transfer is complete; the other methods just enqueue a command
-		 *  for transfering the data (an event object can be used to wait for completion).
+		 *  These methods load data from host memory onto the device. They enqueue write-buffer
+		 *  commands to the command queue for the associated device. The suffix <strong>Blocking</strong>
+		 *  indicates that the memory transfer is already completed once the method returns; the other methods
+		 *  just enqueue a command for transfering the data (an event object can be used to wait for completion).
 		 */
 		//@{
 
@@ -196,7 +196,7 @@ namespace tbt
 		 */
 		void loadBlocking(const MappedArray<T> &ma);
 
-		//! Loads the subarray [\a first, \a last) from host memory to the subarray starting at \a firstDev onto the device.
+		//! Loads the subarray [\a first, \a last) from host memory to the subarray starting at \a firstSrc onto the device.
 		/**
 		 * This method enqueues a blocking write-buffer command. Once this method returns, the memory
 		 * transfer to the device is completed. The method copies the elements in [\a first, \a last) to
@@ -209,7 +209,7 @@ namespace tbt
 		 *                     Possible iterator types are, e.g., const-iterators for host or mapped arrays, or pointers to C-arrays.
 		 * @param[in] first    is an iterator pointing to the first element in the subarray to be loaded.
 		 * @param[in] last     is an iterator pointing to the one-past-last element in the subarray to be loaded.
-		 * @param[in] firstDev is an iterator pointing to the starting position, where the subarray is stored in this device array.
+		 * @param[in] firstSrc is an iterator pointing to the starting position, where the subarray is stored on the host.
 		 */
 		template<class _ITER>
 		void loadBlocking(iterator first, iterator last, _ITER firstSrc) {
@@ -250,7 +250,7 @@ namespace tbt
 		 */
 		void load(const MappedArray<T> &ma, cl::Event *eventLoad = 0);
 
-		//! Enqueues a command for loading the subarray [\a first, \a last) from host memory at \a firstDev onto the device.
+		//! Enqueues a command for loading the subarray [\a first, \a last) from host memory at \a firstSrc onto the device.
 		/**
 		 * This method enqueues a non-blocking write-buffer command and returns an event object associated with
 		 * this write command that can be queried (or waited for). The command copies \ m := \a last-\a first elements in
@@ -263,7 +263,7 @@ namespace tbt
 		 *                           Possible iterator types are, e.g., const-iterators for host or mapped arrays, or pointers to C-arrays.
 		 * @param[in]     first      is an iterator pointing to the first element in the subarray to be loaded.
 		 * @param[in]     last       is an iterator pointing to the one-past-last element in the subarray to be loaded.
-		 * @param[in]     firstDev   is an iterator pointing to the starting position, where the subarray is stored in this device array.
+		 * @param[in]     firstSrc   is an iterator pointing to the starting position, where the subarray is stored on the host.
 		 * @param[in,out] eventLoad  if not 0, returns an event object that identifies the write command.
 		 */
 		template<class _ITER>
@@ -276,10 +276,10 @@ namespace tbt
 		//@}
 
 		/** @name Transfering Data from Device to Host Memory
-		 *  These methods store data on the device in host memory. They enqueue read- and write-buffer
-		 *  commands to the command queue for the associated device. The methods ending with <em>Blocking</em>
-		 *  only return once the memory transfer is complete; the other methods just enqueue a command
-		 *  for transfering the data (an event object can be used to wait for completion).
+		 * These methods store data on the device in host memory. They enqueue read-buffer
+		 * commands to the command queue for the associated device. The suffix <strong>Blocking</strong>
+		 * indicates that the memory transfer is already completed once the method returns; the other methods
+		 * just enqueue a command for transfering the data (an event object can be used to wait for completion).
 		 */
 		//@{
 
@@ -314,6 +314,26 @@ namespace tbt
 		 */
 		void storeBlocking(MappedArray<T> &ma);
 
+		//! Stores the subarray [\a first, \a last) of this device array in host memory at \a firstSrc.
+		/**
+		 * This method enqueues a blocking read-buffer command.Once this method returns, the memory
+		 * transfer to the device is completed. The command copies \ m := \a last-\a first elements in
+		 * [\a first, \a last) to [\a firstDst, \a firstDst + \a m) in host memory,
+		 *
+		 * \pre \a \a first and \a last must be valid iterators pointing to this device array, and
+		 *      \a firstDst must be a valid iterator pointing to an array.
+		 *
+		 * @tparam        _ITER       must be an array iterator (i.e., the elements must be stored consecutively).
+		 *                            Possible iterator types are, e.g., iterators for host or mapped arrays, or pointers to C-arrays.
+		 * @param[in]     first       is an iterator pointing to the first element in the subarray to be stored.
+		 * @param[in]     last        is an iterator pointing to the one-past-last element in the subarray to be stored.
+		 * @param[in]     firstDst    is an iterator pointing to the starting position, where the subarray shall be stored.
+		 */
+		template<class _ITER>
+		void storeBlocking(const_iterator first, const_iterator last, _ITER firstDst) {
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_TRUE, first.getIndex()*sizeof(T), (last-first)*sizeof(T), &*firstDst);
+		}
+
 		//! Enqueues a command for storing the data on the device in C-array \a ptr.
 		/**
 		 * This method enqueues a non-blocking read-buffer command and returns an event object associated with
@@ -347,6 +367,27 @@ namespace tbt
 		 * @param[in,out] eventStore   if not 0, returns an event object that identifies the read command.
 		 */
 		void store(MappedArray<T> &ma, cl::Event *eventStore = 0);
+
+		//! Enqueues a command for storing the subarray [\a first, \a last) of this device array in host memory at \a firstSrc.
+		/**
+		 * This method enqueues a non-blocking read-buffer command and returns an event object associated with
+		 * this read command that can be queried (or waited for). The command copies \ m := \a last-\a first elements in
+		 * [\a first, \a last) to [\a firstDst, \a firstDst + \a m) in host memory,
+		 *
+		 * \pre \a \a first and \a last must be valid iterators pointing to this device array, and
+		 *      \a firstDst must be a valid iterator pointing to an array.
+		 *
+		 * @tparam        _ITER       must be an array iterator (i.e., the elements must be stored consecutively).
+		 *                            Possible iterator types are, e.g., iterators for host or mapped arrays, or pointers to C-arrays.
+		 * @param[in]     first       is an iterator pointing to the first element in the subarray to be stored.
+		 * @param[in]     last        is an iterator pointing to the one-past-last element in the subarray to be stored.
+		 * @param[in]     firstDst    is an iterator pointing to the starting position, where the subarray shall be stored.
+		 * @param[in,out] eventStore  if not 0, returns an event object that identifies the write command.
+		 */
+		template<class _ITER>
+		void store(const_iterator first, const_iterator last, _ITER firstDst, cl::Event *eventStore = 0) {
+			m_devCon->getCommandQueue().enqueueReadBuffer(m_buffer, CL_FALSE, first.getIndex()*sizeof(T), (last-first)*sizeof(T), &*firstDst, 0, eventStore);
+		}
 
 		//@}
 	};
