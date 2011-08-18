@@ -3,6 +3,7 @@
 #define _MAPPED_STRUCT_TEST
 
 #include "UnitTest.h"
+#include <tbt/DeviceController.h>
 
 
 class MappedStructTest : public UnitTest
@@ -13,6 +14,11 @@ public:
 	bool runTests();
 
 	void testMapMemory();
+
+private:
+	template<class FLOAT>
+	void doTestMapMemory(tbt::DeviceController *devCon);
+
 };
 
 

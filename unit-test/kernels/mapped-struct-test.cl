@@ -1,8 +1,14 @@
 
+#ifdef TBT_EXT_FP64
+#define FLOAT double
+#else
+#define FLOAT float
+#endif
+
 struct Data {
 	int    m_n;
 	float  m_x;
-	double m_y;
+	FLOAT  m_y;
 	uint   m_d[3];
 };
 

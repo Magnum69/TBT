@@ -31,23 +31,25 @@ bool MappedStructTest::runTests()
 }
 
 
+template<class FLOAT>
 struct Data {
 	cl_int    m_n;
 	cl_float  m_x;
-	cl_double m_y;
+	FLOAT     m_y;
 	cl_uint   m_d[3];
 };
 
 	
+template<class FLOAT>
 class MappedStructTestModule : public tbt::Module
 {
 	static cl::Kernel s_kernel;
 
 public:
-	void run(tbt::MappedStruct<Data> &ms)
+	void run(tbt::MappedStruct<Data<FLOAT> > &ms)
 	{
 		if(!isProgramLoaded()) {
-			buildProgramFromSourceRel("mapped-struct-test.cl", TBT_EXT_FP64);
+			buildProgramFromSourceRel("mapped-struct-test.cl", 0, TBT_EXT_FP64);
 			s_kernel = createKernel("mappedStructTest");
 		}
 
@@ -56,18 +58,18 @@ public:
 	}
 };
 
-cl::Kernel MappedStructTestModule::s_kernel;
+template<class FLOAT>
+cl::Kernel MappedStructTestModule<FLOAT>::s_kernel;
 
 
-void MappedStructTest::testMapMemory()
+template<class FLOAT>
+void MappedStructTest::doTestMapMemory(tbt::DeviceController *devCon)
 {
-	tbt::DeviceController *devCon = tbt::getDeviceController();
+	tbt::MappedStruct<Data<FLOAT> > ms(devCon);
 
-	tbt::MappedStruct<Data> ms(devCon);
-
-	cl_int n = 17;
-	float x = 2.32f;
-	double y = -113.56;
+	cl_int    n = 17;
+	cl_float  x = 2.32f;
+	FLOAT     y = (FLOAT)-113.56;
 
 	ms->m_n = n;
 	ms->m_x = x;
@@ -78,18 +80,31 @@ void MappedStructTest::testMapMemory()
 
 	ms.mapHostToDeviceBlocking();
 
-	// TBD: call some test kernel...
-	MappedStructTestModule test;
+	MappedStructTestModule<FLOAT> test;
 	test.run(ms);
 	devCon->finish();
 
 	ms.mapDeviceToHostBlocking();
 
-	// TBD: check what have been done by test kernel...
+	float xRes = x * x;
+	FLOAT yRes = y;
+	yRes *= 4;
+
 	UTASSERT(ms->m_n == 2 * n);
-	UTASSERT(ms->m_x == x * x);
-	UTASSERT(ms->m_y == 4 * y);
+	UTASSERT(ms->m_x == xRes);
+	UTASSERT(ms->m_y == yRes);
 	UTASSERT(ms->m_d[0] == 15);
 	UTASSERT(ms->m_d[1] == 25);
 	UTASSERT(ms->m_d[2] == 15+25+35);
+}
+
+
+void MappedStructTest::testMapMemory()
+{
+	tbt::DeviceController *devCon = tbt::getDeviceController();
+
+	if(devCon->getExtensions() & TBT_EXT_FP64)
+		doTestMapMemory<cl_double>(devCon);
+	else
+		doTestMapMemory<cl_float>(devCon);
 }
