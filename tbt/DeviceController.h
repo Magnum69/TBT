@@ -13,6 +13,52 @@ namespace tbt
 	//! Device controller encapsulating a device with a command queue.
 	/**
 	 * \ingroup context
+	 *
+	 * \section OpenCL Extensions
+	 *
+	 * TBT allows to automatically set some OpenCL extensions whithout the need to put the corresponding
+	 * pragmas in the source code. Depending on the OpenCL paltform, some extensions may have different names.
+	 * e.g., the extension for 64-bit floating point support is called <tt>cl_khr_fp64</tt> for Intel CPUs,
+	 * but cl_amd_fp64 for AMD graphics cards. TBT chooses the correct name as supported by the device.
+	 *
+	 * A TBT Module can specify required and optional extensions. If a required extensions is not supported by a
+	 * device, an exception will be thrown. In order to query if an optional extension could be enabled, TBT
+	 * defines a macro in OpenCL programs that allows to use conditional compilation for providing different
+	 * code depending on the availability of the extension.
+	 *
+	 * TBT specifies extensions as a bitvector, where each bit represents an extension. For each extensions,
+	 * a macro is defined which sets the corresponding bit; these macros can be combined with or (<tt>|</tt>)
+	 * to make up the bitvector. The following table lists the available extensions and predefined macros.
+	 *
+	 * <table>
+	 * <tr><th>Extension</th><th>Description</th><th>Define in OpenCL program</th><th>OpenCL Extensions</th></tr>
+	 * <tr>
+	 *   <td><tt>TBT_EXT_FP64</tt></td>
+	 *   <td>Enable support for double precision floating-point.</td>
+	 *   <td><tt>TBT_EXT_FP64</tt></td>
+	 *   <td><tt>cl_khr_fp64</tt><br><tt>cl_amd_fp64</tt></td>
+	 * </tr><tr>
+	 *   <td><tt>TBT_EXT_PRINTF</tt></td>
+	 *   <td>Enables support for printf-function in OpenCL kernels.</td>
+	 *   <td><tt>TBT_EXT_PRINTF</tt></td>
+	 *   <td><tt>cl_intel_printf</tt><br><tt>cl_amd_printf</tt></td>
+	 * </tr><tr>
+	 *   <td><tt>TBT_EXT_INT64_BASE_ATOMICS</tt></td>
+	 *   <td>Enables support for basic atomic operations (<tt>atom_add</tt>, <tt>atom_sub</tt>,
+	 *       <tt>atom_xchg</tt>, <tt>atom_inc</tt>, <tt>atom_dec</tt>, <tt>atom_cmpxchg</tt>)
+	 *       on 64-bit signed and unsigned integers stored in local or global memory.</td>
+	 *   <td><tt>TBT_EXT_INT64_BASE_ATOMICS</tt></td>
+	 *   <td><tt>cl_khr_int64_base_atomics</tt></td>
+	 * </tr>
+	 * <tr>
+	 *   <td><tt>TBT_EXT_INT64_EXTENDED_ATOMICS</tt></td>
+	 *   <td>Enables support for extended atomic operations (<tt>atom_min</tt>, <tt>atom_max</tt>,
+	 *       <tt>atom_and</tt>, <tt>atom_or</tt>, <tt>atom_xor</tt>)
+	 *       on 64-bit signed and unsigned integers stored in local or global memory.</td>
+	 *   <td><tt>TBT_EXT_INT64_EXTENDED_ATOMICS</tt></td>
+	 *   <td><tt>cl_khr_int64_extended_atomics</tt></td>
+	 * </tr>
+	 * </table>
 	 */
 	class DeviceController
 	{
