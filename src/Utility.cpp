@@ -24,31 +24,30 @@ namespace tbt {
 	}
 
 
-	bool Utility::writeProgramInfoFile(const char *fileName, const cl::Device &device)
+	bool Utility::writeProgramInfoFile(const char *fileName, const DeviceController *devCon, cl_uint extensions)
 	{
 		ofstream osInfo(fileName);
 		if(!osInfo) return false;
 
-		string str;
-		device.getInfo(CL_DEVICE_NAME, &str);
-		osInfo << "CL_DEVICE_NAME\t"    << str  << "\n";
-
-		device.getInfo(CL_DEVICE_VENDOR, &str);
-		osInfo << "CL_DEVICE_VENDOR\t"  << str  << "\n";
-
-		device.getInfo(CL_DEVICE_VERSION, &str);
-		osInfo << "CL_DEVICE_VERSION\t" << str << "\n";
-
-		device.getInfo(CL_DRIVER_VERSION, &str);
-		osInfo << "CL_DRIVER_VERSION\t" << str << "\n";
+		osInfo << "CL_DEVICE_NAME\t"        << devCon->getName()          << "\n";
+		osInfo << "CL_DEVICE_VENDOR\t"      << devCon->getVendor()        << "\n";
+		osInfo << "CL_DEVICE_VERSION\t"     << devCon->getVersion()       << "\n";
+		osInfo << "CL_DRIVER_VERSION\t"     << devCon->getDriverVersion() << "\n";
+		osInfo << "TBT_DEVICE_EXTENSIONS\t" << extensions                 << "\n";
 
 		return true;
 	}
 
-	bool Utility::checkProgramInfoFile(const char *fileName, const cl::Device &device)
+	bool Utility::checkProgramInfoFile(const char *fileName, const DeviceController *devCon, cl_uint extensions)
 	{
 		ifstream isInfo(fileName);
 		if(!isInfo) return false;
+
+		bool checkedName       = false;
+		bool checkedVendor     = false;
+		bool checkedVersion    = false;
+		bool checkedDriver     = false;
+		bool checkedExtensions = false;
 
 		char buffer[256];
 		while(!isInfo.eof())
@@ -71,24 +70,28 @@ namespace tbt {
 
 			string str;
 			if(name == "CL_DEVICE_NAME") {
-				device.getInfo(CL_DEVICE_NAME, &str);
-				if(str != value) return false;
+				if(devCon->getName() != value) return false;
+				checkedName = true;
 
 			} else if (name == "CL_DEVICE_VENDOR") {
-				device.getInfo(CL_DEVICE_VENDOR, &str);
-				if(str != value) return false;
+				if(devCon->getVendor() != value) return false;
+				checkedVendor = true;
 
 			} else if (name == "CL_DEVICE_VERSION") {
-				device.getInfo(CL_DEVICE_VERSION, &str);
-				if(str != value) return false;
+				if(devCon->getVersion() != value) return false;
+				checkedVersion = true;
 
 			} else if (name == "CL_DRIVER_VERSION") {
-				device.getInfo(CL_DRIVER_VERSION, &str);
-				if(str != value) return false;
+				if(devCon->getDriverVersion() != value) return false;
+				checkedDriver = true;
+
+			} else if (name == "TBT_DEVICE_EXTENSIONS") {
+				if(extensions != atoi(value.c_str())) return false;
+				checkedExtensions = true;
 			}
 		}
 
-		return true;
+		return checkedName && checkedVendor && checkedVersion && checkedDriver && checkedExtensions;
 	}
 
 
@@ -179,17 +182,19 @@ namespace tbt {
 	}
 
 
-	cl::Program Utility::buildProgram(const char *progName)
+	cl::Program Utility::buildProgram(const char *progName, cl_uint requiredExt, cl_uint optionalExt)
 	{
 		cl::Context context = getContext();
+		DeviceController *devCon = getDeviceController();
+
 		cl::vector<cl::Device> devices;
-		context.getInfo(CL_CONTEXT_DEVICES, &devices);
+		devices.push_back(devCon->getDevice());
+		//context.getInfo(CL_CONTEXT_DEVICES, &devices);
 
-		if(devices.size() != 1)
-			throw Error("OclBase::buildProgram: Currently only one device supported!");
+		//if(devices.size() != 1)
+		//	throw Error("OclBase::buildProgram: Currently only one device supported!");
 
-		cl::Device device = devices[0];
-		
+		cl_uint extensions = (requiredExt | optionalExt) & devCon->getExtensions();
 		bool cacheBinary = globalConfig.getCacheProgramBinaries();
 
 		string sourceName = getExePath() + progName;
@@ -199,11 +204,9 @@ namespace tbt {
 		if(cacheBinary)
 		{
 			// assemble directory and file names for cache
-			device.getInfo(CL_DEVICE_NAME, &deviceName);
-			deviceName = simplify(deviceName);
+			deviceName = simplify(devCon->getName());
 
-			cl_uint deviceVendorID;
-			device.getInfo(CL_DEVICE_VENDOR_ID, &deviceVendorID);
+			cl_uint deviceVendorID = devCon->getVendorID();
 
 			string dirNameCache = getExePath() + "cache";
 			string dirNameCacheDevice = dirNameCache + getPathSeparator() + toString(deviceVendorID) + "_" + simplify(deviceName);
@@ -216,7 +219,7 @@ namespace tbt {
 			cacheBinary = (retVal == 0 || errno == EEXIST);
 
 			// check if we have a cache directory, and if the cached file is up-to-date
-			if( retVal == 0 || (errno == EEXIST && (!globalConfig.getRecompileProgramsIfNewerDriver() || checkProgramInfoFile(infoName.c_str(), device))) )
+			if( retVal == 0 || (errno == EEXIST && (!globalConfig.getRecompileProgramsIfNewerDriver() || checkProgramInfoFile(infoName.c_str(), devCon, extensions))) )
 			{
 				//read cached file
 				FILE *pFile;
@@ -243,7 +246,6 @@ namespace tbt {
 							cl::vector<cl_int> binaryStatus(1);
 							try {
 								cl::Program program(context, devices, binaries, &binaryStatus);
-								//cout << "status: " << binaryStatus[0] << endl;
 								program.build(devices);
 
 								delete [] buffer;
@@ -271,7 +273,11 @@ namespace tbt {
 		}
 
 		string progstr(istreambuf_iterator<char>(sourceFile), (istreambuf_iterator<char>()));
-		cl::Program::Sources source( 1, make_pair(progstr.c_str(), progstr.length()));
+		const string &header = devCon->getOpenCLHeader(requiredExt, optionalExt);
+
+		cl::Program::Sources source;
+		source.push_back(make_pair(header .c_str(), header. length()));
+		source.push_back(make_pair(progstr.c_str(), progstr.length()));
 
 		// build program
 		cl::Program program = cl::Program(context, source);
@@ -280,7 +286,7 @@ namespace tbt {
 		} catch(cl::Error err) {
 			if(err.err() == CL_BUILD_PROGRAM_FAILURE) {
 				string msg = "Could not compile kernels.\nBuild-Log:\n";
-				msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+				msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devCon->getDevice());
 				throw Error(msg.c_str(), Error::ecKernelCompileError);
 
 			} else
@@ -309,7 +315,7 @@ namespace tbt {
 				if(bytesWritten < size)
 					throw Error("OclBase::buildProgram: Could not write binary file to cache!", Error::ecProgramCacheError);
 
-				if(writeProgramInfoFile(infoName.c_str(), device) == false)
+				if(writeProgramInfoFile(infoName.c_str(), devCon, extensions) == false)
 					throw Error("OclBase::buildProgram: Could not write info file to cache!", Error::ecProgramCacheError);
 				
 			} else {
@@ -334,5 +340,15 @@ namespace tbt {
 		_aligned_free(ptr);
 	}
 
+
+	int Utility::firstBit(cl_uint bits) {
+		int num = 0;
+		while((bits & 0x01) == 0 && num < 32) {
+			bits >>= 1;
+			++num;
+		}
+
+		return num;
+	}
 
 }

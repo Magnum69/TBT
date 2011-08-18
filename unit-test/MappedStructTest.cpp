@@ -47,7 +47,7 @@ public:
 	void run(tbt::MappedStruct<Data> &ms)
 	{
 		if(!isProgramLoaded()) {
-			buildProgramFromSourceRel("mapped-struct-test.cl");
+			buildProgramFromSourceRel("mapped-struct-test.cl", TBT_EXT_FP64);
 			s_kernel = createKernel("mappedStructTest");
 		}
 

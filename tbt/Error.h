@@ -21,7 +21,8 @@ namespace tbt
 			ecOutOfMemory,             //!< not enough memory available.
 			ecProgramCacheError,       //!< an error occurred while trying to cache a kernel binary.
 			ecNoOpenCLPlatformFound,   //!< no suitable OpenCL platform could be found.
-			ecDataTypeNotSupported     //!< data type of a device array not supported.
+			ecDataTypeNotSupported,    //!< data type of a device array not supported.
+			ecExtensionNotSupported    //!< an OpenCL extension is not supported by the device.
 		};
 
 		//! Constructs an unknown error.

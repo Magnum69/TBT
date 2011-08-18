@@ -28,12 +28,24 @@ namespace tbt
 		bool m_recompileProgramsIfNewerDriver; //!< shall we check driver version and recompile programs if newer?
 
 	public:
+		/** @name Constructor
+		 * TBT maintains a global instance \ref globalConfig of the class Global. There is no need to create further instances of this class.
+		 */
+		//@{
+
 		//! Constructs a global configuration object.
 		Global() {
 			m_cpuDeviceIndex = m_gpuDeviceIndex = -1;
 			m_cacheProgramBinaries = true;
 			m_recompileProgramsIfNewerDriver = true;
 		}
+
+		//@}
+
+		/** @name Options
+		 * The following global options are maintained by this class.
+		 */
+		//@{
 
 		//! Creates a context from a given platform and device type, and creates device controllers.
 		void createContext(cl_device_type deviceType, const cl::Platform &platform, cl_command_queue_properties properties = 0);
@@ -50,8 +62,16 @@ namespace tbt
 		//! Sets option recompileProgramsIfNewerDriver to \a b.
 		void setRecompileProgramsIfNewerDriver(bool b) { m_recompileProgramsIfNewerDriver = b; }
 
+		//@}
+
+		/** @name Platform and Context
+		 * The following method provide access to the global platform, context, and device controllers.
+		 */
+		//@{
+
 		//! Returns global OpenCL platform.
 		cl::Platform getPlatform() { return m_platform; }
+
 
 		//! Returns global OpenCL context.
 		cl::Context getContext() { return m_context; }
@@ -64,6 +84,8 @@ namespace tbt
 
 		//! Returns a device controller for a GPU device (if any, otherwise 0 is returned).
 		DeviceController *getGPUDeviceController() { return (m_gpuDeviceIndex >= 0) ? m_devCons[m_gpuDeviceIndex] : 0; }
+
+		//@}
 	};
 
 

@@ -13,6 +13,8 @@ int main()
 {
 	bool ok = true;
 
+	//tbt::globalConfig.setCacheProgramBinaries(false);
+
 	tbt::createContext(CL_DEVICE_TYPE_GPU);
 	cout << "Platform:" << endl;
 	tbt::displayPlatformInfo(cout) << endl;

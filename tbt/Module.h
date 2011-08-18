@@ -23,12 +23,15 @@ namespace tbt
 		 * It also performs automatic caching of program binaries (if enabled in global options)
 		 * and reads the cached program if available (instead of compiling the sources).
 		 *
-		 * @param progName  file name of the OpenCL program; this file name is realtive to the path
-		 *                  to the currently running executable.
+		 * @param[in] progName     file name of the OpenCL program; this file name is realtive to the path
+		 *                         to the currently running executable.
+		 * @param[in] requiredExt  is a bitvector specifying the OpenCL extensions required to build \a progName.
+		 * @param[in] optionalExt  is a bitvector specifying optional OpenCL extensions; these extensions are not
+		 *                         required to build \a progName, but may be used by conditional compilation.
 		 *
 		 * @see Global for configuring program caching options.
 		 */
-		static void buildProgramFromSourceRel(const char *progName);
+		static void buildProgramFromSourceRel(const char *progName, cl_uint requiredExt = 0, cl_uint optionalExt = 0);
 
 		//! Returns this module's program.
 		static cl::Program getProgram() { return s_program; }

@@ -38,9 +38,9 @@ namespace tbt {
 	}
 
 
-	void Module::buildProgramFromSourceRel(const char *progName)
+	void Module::buildProgramFromSourceRel(const char *progName, cl_uint requiredExt, cl_uint optionalExt)
 	{
-		s_program = Utility::buildProgram(progName);
+		s_program = Utility::buildProgram(progName, requiredExt, optionalExt);
 	}
 
 }

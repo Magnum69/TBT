@@ -7,6 +7,9 @@
 
 namespace tbt
 {
+
+#define TBT_NUM_EXTENSION_STRINGS 6
+
 	//! Device controller encapsulating a device with a command queue.
 	/**
 	 * \ingroup context
@@ -24,6 +27,13 @@ namespace tbt
 		cl_bool        m_hostUnifiedMemory; //!< has the device and the host a unified memory subsystem?
 		cl_uint        m_memBaseAddrAlign;  //!< the minimum alignment of memory base addresses.
 		cl_command_queue_properties m_scqProperties; //!< the supported command-queue properties supported by the associated device.
+		cl_uint m_supportedExtensions;
+
+		int m_extString[TBT_NUM_EXT];
+
+		static const char *s_strExtension[TBT_NUM_EXTENSION_STRINGS];
+		static cl_uint     s_valExtension[TBT_NUM_EXTENSION_STRINGS];
+		static const char *s_defineExtension[TBT_NUM_EXT];
 
 	public:
 		/** @name Constructor
@@ -141,6 +151,39 @@ namespace tbt
 		 *         properties of the command-queue of this device controller.
 		 */
 		cl_command_queue_properties getSupportedCommandQueueProperties() const { return m_scqProperties; }
+
+		//! Returns the OpenCL version supported by the associated device.
+		/**
+		 * @return the supported OpenCL version (CL_DEVICE_VERSION) of the device associated
+		 *         with this device controller.
+		 */
+		std::string getVersion() const;
+
+		//! Returns the OpenCL software driver version of the associated device.
+		/**
+		 * @return the OpenCL software driver version (CL_DRIVER_VERSION) of the device associated
+		 *         with this device controller.
+		 */
+		std::string getDriverVersion() const;
+
+		//! Returns the OpenCL extensions supported by the associated device.
+		/**
+		 * @return a bitvector where each bit represents an extensions according to the definition by TBT;
+		 *         currently supported are TBT_EXT_FP64, TBT_EXT_PRINTF, TBT_EXT_INT64_BASE_ATOMICS,
+		 *         and TBT_EXT_INT64_EXTENDED_ATOMICS. The device may support further extensions not
+		 *         yet supported by TBT.
+		 */
+		cl_uint getExtensions() const {
+			return m_supportedExtensions;
+		}
+
+		//! Returns the header for OpenCL programs, which enables desired and supported OpenCL extensions.
+		/**
+		 * This header is used for building OpenCL programs for this device. It is automatically prepended
+		 * to OpenCL programs and enables the OpenCL extensions as selected in \ref globalConfig if
+		 * supported by the associated device.
+		 */
+		const std::string getOpenCLHeader(cl_uint requiredExt, cl_uint optionalExt) const;
 
 		//@}
 

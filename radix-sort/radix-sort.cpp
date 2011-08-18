@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 			cout << "    " << devCon->getMemBaseAddrAlign() << " bits address alignment" << endl;
 		}
 
-		//tbt::RadixSort radixSort;
+		tbt::RadixSort radixSort;
 
 		if(outputMode == omVerbose) {
 			cout << "Creating array with " << n << " random unsigned ints..." << flush;
@@ -139,39 +139,36 @@ int main(int argc, char *argv[])
 		//tbt::HostArray<cl_uint> a(n);
 		tbt::MappedArray<cl_uint> a(devCon, n);
 		initRandom(a);
-		tbt::MappedArray<cl_uint>::const_iterator it = a.begin();
-		tbt::MappedArray<cl_uint>::const_iterator it2;
-		it2 = it;
-		const cl_uint &x = *it;
+		//tbt::MappedArray<cl_uint>::const_iterator it = a.begin();
+		//tbt::MappedArray<cl_uint>::const_iterator it2;
+		//it2 = it;
+		//const cl_uint &x = *it;
 
 		tbt::HostArray<cl_uint> c(n);
 		for(size_t i = 0; i < n; ++i)
 			c[i] = a[i];
 
-		a.load(a.begin()+1, a.rbegin()-1, c.begin()+1);
+		//a.load(a.begin()+1, a.rbegin()-1, c.begin()+1);
 
 		if(outputMode == omVerbose) {
 			cout << "done." << endl;
 			if(n <= 1024) outputArray(a);
 		}
 
-		//tbt::DeviceArray<cl_uint> devArray(devCon, a.size());
-		//devArray.loadFrom(a);
 		a.mapHostToDevice();
 		//radixSort.run(devArray);
-		//radixSort.run(a);
-		tbt::radixSort(a);
-		//devArray.storeToBlocking(a);
+		radixSort.run(a);
+		//tbt::radixSort(a);
 		a.mapDeviceToHostBlocking();
 
-		//cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
-		//cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
-		//cout << "kernel Prescan:             " << radixSort.totalTimeKernelPrescan()  << " ms" << endl;
-		//cout << "kernel Prescan with Offset: " << radixSort.totalTimeKernelPrescanWithOffset()  << " ms" << endl;
-		//cout << "kernel Permute:             " << radixSort.totalTimeKernelPermute()  << " ms" << endl;
-		//cout << "total kernel time:          " << radixSort.totalTimeKernels() << " ms" << endl;
-		//cout << endl;
-		//cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
+		cout << "kernel Counting:            " << radixSort.totalTimeKernelCounting() << " ms" << endl;
+		cout << "kernel Prescan Sum:         " << radixSort.totalTimeKernelPrescanSum()  << " ms" << endl;
+		cout << "kernel Prescan:             " << radixSort.totalTimeKernelPrescan()  << " ms" << endl;
+		cout << "kernel Prescan with Offset: " << radixSort.totalTimeKernelPrescanWithOffset()  << " ms" << endl;
+		cout << "kernel Permute:             " << radixSort.totalTimeKernelPermute()  << " ms" << endl;
+		cout << "total kernel time:          " << radixSort.totalTimeKernels() << " ms" << endl;
+		cout << endl;
+		cout << "total time:                 " << radixSort.totalTime() << " ms" << endl;
 
 		cout << "Checking results..." << flush;
 		sort(&c[0],&c[n]);

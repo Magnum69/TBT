@@ -71,6 +71,14 @@
 #include <tbt/Error.h>
 
 
+#define TBT_EXT_FP64                    (1 << 0)
+#define TBT_EXT_PRINTF                  (1 << 1)
+#define TBT_EXT_INT64_BASE_ATOMICS      (1 << 2)
+#define TBT_EXT_INT64_EXTENDED_ATOMICS  (1 << 3)
+
+#define TBT_NUM_EXT 4
+
+
 namespace tbt
 {
 

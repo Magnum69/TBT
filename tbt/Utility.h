@@ -8,6 +8,8 @@
 
 namespace tbt
 {
+	class DeviceController;
+
 
 	//! Collection of some static utility functions for file system and kernel caching.
 	class Utility
@@ -22,28 +24,33 @@ namespace tbt
 
 		//! Writes the program info file \a fileName for caching binaries of \a device.
 		/**
-		 * @param[in] fileName  is the file name of the info file to be created.
-		 * @param[in] device    is the device for which the info file shall be created.
-		 * @return              true if file creation was successful, otherwise false.
+		 * @param[in] fileName   is the file name of the info file to be created.
+		 * @param[in] devCon     is the device controller for which the info file shall be created.
+		 * @param[in] extensions specifies the extensions enabled when compiling the program.
+		 * @return               true if file creation was successful, otherwise false.
 		 */
-		static bool writeProgramInfoFile(const char *fileName, const cl::Device &device);
+		static bool writeProgramInfoFile(const char *fileName, const DeviceController *devCon, cl_uint extensions = 0);
 
 		//! Checks the progam info file \a fileName if the cached binary is up-to-date.
 		/**
-		 * @param[in] fileName  is the file name of the info file.
-		 * @param[in] device    is the device corresponding to the info file.
-		 * @return              true if the info file could be read successfully and indicates
-		 *                      that the cached binaray is up-to-date; otherwise false is returned.
+		 * @param[in] fileName   is the file name of the info file.
+		 * @param[in] devCon     is the device controller corresponding to the info file.
+		 * @param[in] extensions specifies the extensions that should be enabled when compiling the program.
+		 * @return               true if the info file could be read successfully and indicates
+		 *                       that the cached binaray is up-to-date; otherwise false is returned.
 		 */
-		static bool checkProgramInfoFile(const char *fileName, const cl::Device &device);
+		static bool checkProgramInfoFile(const char *fileName, const DeviceController *devCon, cl_uint extensions = 0);
 
 	public:
 		//! Builds OpenCL program \a progName in the global context.
 		/**
-		 * @param[in] progName  is the file name of the OpenCL program, relative to the path of the executable.
-		 * @return              the build program.
+		 * @param[in] progName     is the file name of the OpenCL program, relative to the path of the executable.
+		 * @param[in] requiredExt  is a bitvector specifying the OpenCL extensions required to build \a progName.
+		 * @param[in] optionalExt  is a bitvector specifying optional OpenCL extensions; these extensions are not
+		 *                         required to build \a progName, but may be used by conditional compilation.
+		 * @return                 the build program.
 		 */
-		static cl::Program buildProgram(const char *progName);
+		static cl::Program buildProgram(const char *progName, cl_uint requiredExt = 0, cl_uint optionalExt = 0);
 
 		//! Returns the string representation of \a i.
 		/**
@@ -125,6 +132,8 @@ namespace tbt
 		 * @param[in] ptr  is the base address of the memory block to be freed; may be 0, in which case no action is performed.
 		 */
 		static void alignedFree(void *ptr);
+
+		static int firstBit(cl_uint bits);
 	};
 
 }
