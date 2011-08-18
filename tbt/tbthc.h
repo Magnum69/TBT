@@ -71,12 +71,12 @@
 #include <tbt/Error.h>
 
 
-#define TBT_EXT_FP64                    (1 << 0)
-#define TBT_EXT_PRINTF                  (1 << 1)
-#define TBT_EXT_INT64_BASE_ATOMICS      (1 << 2)
-#define TBT_EXT_INT64_EXTENDED_ATOMICS  (1 << 3)
+#define TBT_EXT_FP64                    (1 << 0)   //!< OpenCL extension for 64-bit floating point support.
+#define TBT_EXT_PRINTF                  (1 << 1)   //!< OpenCL extension for printf-function support.
+#define TBT_EXT_INT64_BASE_ATOMICS      (1 << 2)   //!< OpenCL extension for basic 64-bit integer atomics support.
+#define TBT_EXT_INT64_EXTENDED_ATOMICS  (1 << 3)   //!< OpenCL extension for extended 64-bit integer atomics support.
 
-#define TBT_NUM_EXT 4
+#define TBT_NUM_EXT 4                              //!< The number of OpenCL extensions supported by TBT
 
 
 namespace tbt
