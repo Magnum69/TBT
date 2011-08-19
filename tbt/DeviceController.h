@@ -8,7 +8,7 @@
 namespace tbt
 {
 
-#define TBT_NUM_EXTENSION_STRINGS 6
+#define TBT_NUM_EXTENSION_STRINGS 8
 
 	//! Device controller encapsulating a device with a command queue.
 	/**
@@ -34,12 +34,18 @@ namespace tbt
 	 * <tr><th>Extension</th><th>Description</th><th>Define in OpenCL program</th><th>OpenCL Extensions</th></tr>
 	 * <tr>
 	 *   <td><tt>TBT_EXT_FP64</tt></td>
-	 *   <td>Enable support for double precision floating-point.</td>
+	 *   <td>Enables support for double precision floating-point.</td>
 	 *   <td><tt>TBT_EXT_FP64</tt></td>
 	 *   <td><tt>cl_khr_fp64</tt><br><tt>cl_amd_fp64</tt></td>
 	 * </tr><tr>
+	 *   <td><tt>TBT_EXT_FP16</tt></td>
+	 *   <td>Enables support for half precision floating-point (types <tt>half</tt>, <tt>half2</tt>,
+	 *       <tt>half4</tt>, <tt>half8</tt>, <tt>half16</tt>).</td>
+	 *   <td><tt>TBT_EXT_FP16</tt></td>
+	 *   <td><tt>cl_khr_fp16</tt></td>
+	 * </tr><tr>
 	 *   <td><tt>TBT_EXT_PRINTF</tt></td>
-	 *   <td>Enables support for printf-function in OpenCL kernels.</td>
+	 *   <td>Enabless support for printf-function in OpenCL kernels.</td>
 	 *   <td><tt>TBT_EXT_PRINTF</tt></td>
 	 *   <td><tt>cl_intel_printf</tt><br><tt>cl_amd_printf</tt></td>
 	 * </tr><tr>
@@ -57,6 +63,14 @@ namespace tbt
 	 *       on 64-bit signed and unsigned integers stored in local or global memory.</td>
 	 *   <td><tt>TBT_EXT_INT64_EXTENDED_ATOMICS</tt></td>
 	 *   <td><tt>cl_khr_int64_extended_atomics</tt></td>
+	 * </tr>
+	 * <tr>
+	 *   <td><tt>TBT_EXT_BYTE_ADDRESSABLE_STORE</tt></td>
+	 *   <td>Enables support for writing to elements of a pointer (or struct) that are of type
+	 *       <tt>char</tt>, <tt>uchar</tt>, <tt>char2</tt>, <tt>uchar2</tt>, <tt>short</tt>,
+	 *       <tt>ushort</tt>, or <tt>half</tt>.</td>
+	 *   <td><tt>TBT_EXT_BYTE_ADDRESSABLE_STORE</tt></td>
+	 *   <td><tt>cl_khr_byte_addressable_store</tt></td>
 	 * </tr>
 	 * </table>
 	 */

@@ -10,26 +10,32 @@ namespace tbt
 	const char *DeviceController::s_strExtension[TBT_NUM_EXTENSION_STRINGS] = {
 		"cl_khr_fp64",
 		"cl_amd_fp64",
+		"cl_khr_fp16 ",
 		"cl_intel_printf",
 		"cl_amd_printf",
 		"cl_khr_int64_base_atomics",
-		"cl_khr_int64_extended_atomics"
+		"cl_khr_int64_extended_atomics",
+		"cl_khr_byte_addressable_store"
 	};
 
 	cl_uint DeviceController::s_valExtension[TBT_NUM_EXTENSION_STRINGS] = {
 		TBT_EXT_FP64,
 		TBT_EXT_FP64,
+		TBT_EXT_FP16,
 		TBT_EXT_PRINTF,
 		TBT_EXT_PRINTF,
 		TBT_EXT_INT64_BASE_ATOMICS,
-		TBT_EXT_INT64_EXTENDED_ATOMICS
+		TBT_EXT_INT64_EXTENDED_ATOMICS,
+		TBT_EXT_BYTE_ADDRESSABLE_STORE
 	};
 
 	const char *DeviceController::s_defineExtension[TBT_NUM_EXT] = {
 		"TBT_EXT_FP64",
+		"TBT_EXT_FP16",
 		"TBT_EXT_PRINTF",
 		"TBT_EXT_INT64_BASE_ATOMICS",
-		"TBT_EXT_INT64_EXTENDED_ATOMICS"
+		"TBT_EXT_INT64_EXTENDED_ATOMICS",
+		"TBT_EXT_BYTE_ADDRESSABLE_STORE"
 	};
 
 

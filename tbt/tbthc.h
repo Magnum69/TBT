@@ -72,11 +72,13 @@
 
 
 #define TBT_EXT_FP64                    (1 << 0)   //!< OpenCL extension for 64-bit floating point support.
-#define TBT_EXT_PRINTF                  (1 << 1)   //!< OpenCL extension for printf-function support.
-#define TBT_EXT_INT64_BASE_ATOMICS      (1 << 2)   //!< OpenCL extension for basic 64-bit integer atomics support.
-#define TBT_EXT_INT64_EXTENDED_ATOMICS  (1 << 3)   //!< OpenCL extension for extended 64-bit integer atomics support.
+#define TBT_EXT_FP16                    (1 << 1)   //!< OpenCL extension for 16-bit floating point support.
+#define TBT_EXT_PRINTF                  (1 << 2)   //!< OpenCL extension for printf-function support.
+#define TBT_EXT_INT64_BASE_ATOMICS      (1 << 3)   //!< OpenCL extension for basic 64-bit integer atomics support.
+#define TBT_EXT_INT64_EXTENDED_ATOMICS  (1 << 4)   //!< OpenCL extension for extended 64-bit integer atomics support.
+#define TBT_EXT_BYTE_ADDRESSABLE_STORE  (1 << 5)   //!< OpenCL extension for writing to elements of types smaller than 32 bits.
 
-#define TBT_NUM_EXT 4                              //!< The number of OpenCL extensions supported by TBT
+#define TBT_NUM_EXT 6                              //!< The number of OpenCL extensions supported by TBT
 
 
 namespace tbt
