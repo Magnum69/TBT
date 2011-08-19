@@ -94,10 +94,10 @@ namespace tbt
 
 	//! Create global context from given platform and device type.
 	/**
-	 * @param deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
-	 * @param platform    must be a valid OpenCL platform.
-	 * @param properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
-	 *                    properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
+	 * @param[in] deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
+	 * @param[in] platform    must be a valid OpenCL platform.
+	 * @param[in] properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
+	 *                        properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
 	 */
 	inline void createContext(cl_device_type deviceType, const cl::Platform &platform, cl_command_queue_properties properties = 0) {
 		globalConfig.createContext(deviceType, platform, properties);
@@ -105,9 +105,9 @@ namespace tbt
 
 	//! Create global context from given device type.
 	/**
-	 * @param deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
-	 * @param properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
-	 *                    properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
+	 * @param[in] deviceType  is the desired device type; possible values are CL_DEVICE_TYPE_CPU and CL_DEVICE_TYPE_GPU.
+	 * @param[in] properties  specifies a list of properties for the created command-queues. This is a bit-field; possible
+	 *                        properties are CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE and CL_QUEUE_PROFILING_ENABLE.
 	 */
 	void createContext(cl_device_type deviceType, cl_command_queue_properties properties = 0);
 
@@ -119,7 +119,7 @@ namespace tbt
 
 	//! Display information about global OpenCL platform.
 	/**
-	 * @param os is the C++-output stream on which the information about the platform is written.
+	 * @param[in,out] os  is the C++-output stream on which the information about the platform is written.
 	 * @return the output stream \a os.
 	 */
 	std::ostream &displayPlatformInfo(std::ostream &os = std::cout);
