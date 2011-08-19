@@ -19,6 +19,10 @@ int main()
 	cout << "Platform:" << endl;
 	tbt::displayPlatformInfo(cout) << endl;
 
+	cout << "Device:" << endl;
+	tbt::DeviceController *devCon = tbt::getDeviceController();
+	devCon->displayInfo() << endl;
+
 
 	DeviceArrayTest devArrayTest;
 	cout << "Testing unit " << devArrayTest.name() << "..." << endl;

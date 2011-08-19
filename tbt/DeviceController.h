@@ -14,9 +14,48 @@ namespace tbt
 	/**
 	 * \ingroup context
 	 *
-	 * \section OpenCL Extensions
+	 * \section dev_info Device Information
 	 *
-	 * TBT allows to automatically set some OpenCL extensions whithout the need to put the corresponding
+	 * A device controller allows to some query specific capabilities of the associated OpenCL device, which otherwise
+	 * would have to be queried using the OpenCL runtime function clGetDeviceInfo(). Some of these information
+	 * are already queried and cached when the device controller is constructed, others are queried on the fly.
+	 * The following table lists the device information currently supported by a device controller.
+	 *
+	 * <table>
+	 * <tr><th>Method</th><th>cl_device_info</th><th>Type</th><th>Cached</th></tr>
+	 * <tr><td>getType()</td><td><tt>CL_DEVICE_TYPE</tt></td><td><tt>cl_device_type</tt></td><td>yes</td></tr>
+	 * <tr><td>getName()</td><td><tt>CL_DEVICE_NAME</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * <tr><td>getVendor()</td><td><tt>CL_DEVICE_VENDOR</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * <tr><td>getVendorID()</td><td><tt>CL_DEVICE_VENDOR_ID</tt></td><td><tt>cl_uint</tt></td><td>no</td></tr>
+	 * <tr><td>getMaxComputeUnits()</td><td><tt>CL_DEVICE_MAX_COMPUTE_UNITS</tt></td><td><tt>cl_uint</tt></td><td>yes</td></tr>
+	 * <tr><td>getMaxClockFrequency()</td><td><tt>CL_DEVICE_MAX_CLOCK_FREQUENCY</tt></td><td><tt>cl_uint</tt></td><td>no</td></tr>
+	 * <tr><td>isLittleEndian()</td><td><tt>CL_DEVICE_ENDIAN_LITTLE</tt></td><td><tt>cl_bool</tt></td><td>no</td></tr>
+	 * <tr><td>getMaxWorkGroupSize()</td><td><tt>CL_DEVICE_MAX_WORK_GROUP_SIZE</tt></td><td><tt>size_t</tt></td><td>yes</td></tr>
+	 * <tr><td>getMaxWorkItemDimensions()</td><td><tt>CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS</tt></td><td><tt>cl_uint</tt></td><td>yes</td></tr>
+	 * <tr><td>getLocalMemSize()</td><td><tt>CL_DEVICE_LOCAL_MEM_SIZE</tt></td><td><tt>cl_ulong</tt></td><td>yes</td></tr>
+	 * <tr><td>getLocalMemType()</td><td><tt>CL_DEVICE_LOCAL_MEM_TYPE</tt></td><td><tt>cl_device_local_mem_type</tt></td><td>yes</td></tr>
+	 * <tr><td>getGlobalMemSize()</td><td><tt>CL_DEVICE_GLOBAL_MEM_SIZE</tt></td><td><tt>cl_ulong</tt></td><td>yes</td></tr>
+	 * <tr><td>getGlobalMemCacheSize()</td><td><tt>CL_DEVICE_GLOBAL_MEM_CACHE_SIZE</tt></td><td><tt>cl_ulong</tt></td><td>yes</td></tr>
+	 * <tr><td>getGlobalMemCacheType()</td><td><tt>CL_DEVICE_GLOBAL_MEM_CACHE_TYPE</tt></td><td><tt>cl_device_mem_cache_type</tt></td><td>yes</td></tr>
+	 * <tr><td>getGlobalMemCachelineSize()</td><td><tt>CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE</tt></td><td><tt>cl_uint</tt></td><td>yes</td></tr>
+	 * <tr><td>getMaxMemAllocSize()</td><td><tt>CL_DEVICE_MAX_MEM_ALLOC_SIZE</tt></td><td><tt>cl_ulong</tt></td><td>yes</td></tr>
+	 * <tr><td>getHostUnifiedMemory()</td><td><tt>CL_DEVICE_HOST_UNIFIED_MEMORY</tt></td><td><tt>cl_bool</tt></td><td>yes</td></tr>
+	 * <tr><td>getMemBaseAddrAlign()</td><td><tt>CL_DEVICE_MEM_BASE_ADDR_ALIGN</tt></td><td><tt>cl_uint</tt></td><td>yes</td></tr>
+	 * <tr><td>getSupportedCommandQueueProperties()</td><td><tt>CL_DEVICE_QUEUE_PROPERTIES</tt></td><td><tt>cl_command_queue_properties</tt></td><td>yes</td></tr>
+	 * <tr><td>getExecutionCapabilities()</td><td><tt>CL_DEVICE_EXECUTION_CAPABILITIES</tt></td><td><tt>cl_device_exec_capabilities</tt></td><td>yes</td></tr>
+	 * <tr><td>getVersion()</td><td><tt>CL_DEVICE_VERSION</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * <tr><td>getOpenCLCVersion()</td><td><tt>CL_DEVICE_OPENCL_CVERSION</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * <tr><td>getProfile()</td><td><tt>CL_DEVICE_PROFILE</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * <tr><td>getDriverVersion()</td><td><tt>CL_DRIVER_VERSION</tt></td><td><tt>std::string</tt></td><td>no</td></tr>
+	 * </table>
+	 *
+	 * <em>Remark:</em> You can also query any device information directly by getting the device associated with
+	 * the device controller (getDevice()) and using the method getInfo() of cl::Device. Device extensions can
+	 * also be queried as described in the next section.
+	 *
+	 * \section dev_extensions OpenCL Device Extensions
+	 *
+	 * TBT allows to automatically set some OpenCL device extensions whithout the need to put the corresponding
 	 * pragmas in the source code. Depending on the OpenCL paltform, some extensions may have different names.
 	 * e.g., the extension for 64-bit floating point support is called <tt>cl_khr_fp64</tt> for Intel CPUs,
 	 * but cl_amd_fp64 for AMD graphics cards. TBT chooses the correct name as supported by the device.
@@ -73,6 +112,8 @@ namespace tbt
 	 *   <td><tt>cl_khr_byte_addressable_store</tt></td>
 	 * </tr>
 	 * </table>
+	 * The bitvector specifiying the extensions supported by the device associated with a device controller
+	 * can be queried using the method getExtensions().
 	 */
 	class DeviceController
 	{
@@ -80,14 +121,23 @@ namespace tbt
 		cl::Context      m_context; //!< the associated context.
 		cl::CommandQueue m_queue;   //!< the command queue for device in context.
 
-		cl_device_type m_deviceType;        //!< the type of the associated device.
-		cl_uint        m_maxComputeUnits;   //!< the number of parallel compute units on the associated device.
-		size_t         m_maxWorkGroupSize;  //!< the maximum number of work-items in a work-group on the associated device.
-		cl_ulong       m_localMemSize;      //!< the size of the local memory arena on the associated device.
-		cl_bool        m_hostUnifiedMemory; //!< has the device and the host a unified memory subsystem?
-		cl_uint        m_memBaseAddrAlign;  //!< the minimum alignment of memory base addresses.
-		cl_command_queue_properties m_scqProperties; //!< the supported command-queue properties supported by the associated device.
-		cl_uint m_supportedExtensions;
+		cl_device_type              m_deviceType;             //!< the type of the associated device.
+		cl_uint                     m_maxComputeUnits;        //!< the number of parallel compute units on the associated device.
+		size_t                      m_maxWorkGroupSize;       //!< the maximum number of work-items in a work-group on the associated device.
+		cl_uint                     m_maxWorkItemDims;        //!< the maximum dimensions that specify the global and local work-item IDs.
+		cl_ulong                    m_localMemSize;           //!< the size of the local memory arena on the associated device.
+		cl_device_local_mem_type    m_localMemType;           //!< the type of local memory supported.
+		cl_ulong                    m_globalMemSize;          //!< the size of the global device memory.
+		cl_ulong                    m_globalMemCacheSize;     //!< the size of the global memory cache.
+		cl_device_mem_cache_type    m_globalMemCacheType;     //!< the type of the global memory cache.
+		cl_uint                     m_globalMemCachelineSize; //!< the size of the global memory cache line.
+		cl_ulong                    m_maxMemAllocSize;        //!< the maximal size of memory object allocation.
+		cl_bool                     m_hostUnifiedMemory;      //!< has the device and the host a unified memory subsystem?
+		cl_uint                     m_memBaseAddrAlign;       //!< the minimum alignment of memory base addresses.
+		cl_command_queue_properties m_scqProperties;          //!< the command-queue properties supported by the associated device.
+		cl_device_exec_capabilities m_execCapabilities;       //!< the execution capabilities of the associated device.
+
+		cl_uint m_supportedExtensions;  //!< a bitvector specifiying the supported OpenCL extensions (as defined by TBT).
 
 		int m_extString[TBT_NUM_EXT];
 
@@ -131,6 +181,12 @@ namespace tbt
 		 */
 		cl::CommandQueue getCommandQueue() { return m_queue; }
 
+		//! Returns the properties of the command queue associated with this device controller.
+		/**
+		 * @return the properties of the command queue associated with this device controller.
+		 */
+		cl_command_queue_properties getCommandQueueProperties() const;
+
 		//! Returns the associated OpenCL context.
 		/**
 		 * @return the context associated with this device controller.
@@ -147,8 +203,17 @@ namespace tbt
 		 */
 		//@{
 
+		//! Displays information about the device controller on output stream \a os.
+		/**
+		 * @param[in,out] os  is the C++-output stream on which the information about the device controller is written.
+		 * @return the output stream \a os.
+		 */
+		std::ostream &displayInfo(std::ostream &os = std::cout);
+
 		//! Returns the type of the associated OpenCL device.
 		/**
+		 * This value is cached.
+		 *
 		 * @return the type (CL_DEVICE_TYPE) of the device associated with this device controller.
 		 */
 		cl_device_type getType() const { return m_deviceType; }
@@ -173,44 +238,135 @@ namespace tbt
 
 		//! Returns the number of parallel compute units on the associated OpenCL device.
 		/**
+		 * This value is cached.
+		 *
 		 * @return the number of compute units (CL_DEVICE_MAX_COMPUTE_UNITS) of the device associated with this device controller.
 		 */
 		cl_uint getMaxComputeUnits() const { return m_maxComputeUnits; }
 
+		//! Returns the maximum configured clock frequency (in MHz) of the associated OpenCL device.
+		/**
+		 * @return the maximum configured clock frequency (CL_DEVICE_MAX_CLOCK_FREQUENCY) in MHz of the device associated with this device controller.
+		 */
+		cl_uint getMaxClockFrequency() const;
+
 		//! Returns the maximum number of work-items in a work-group on the associated device.
 		/**
+		 * This value is cached.
+		 *
 		 * @return the maximum number of work-items in a work-group (CL_DEVICE_MAX_WORK_GROUP_SIZE)
 		 *         of the device associated with this device controller.
 		 */
 		size_t getMaxWorkGroupSize() const { return m_maxWorkGroupSize; }
 
-		//! Returns the size of the local memory arena on the associated device.
+		//! Returns CL_TRUE if the device is a little endian machine, CL_FALSE otherwise.
 		/**
-		 * @return the size of the local memory arena (CL_DEVICE_LOCAL_MEM_TYPE) on the device associated with this device controller.
+		 * @return CL_TRUE if the device associated with this device controller is a little endian machine,
+		 *         CL_FALSE otherwise (CL_DEVICE_ENDIAN_LITTLE)
+		 */
+		cl_bool isLitleEndian() const;
+
+		//! Returns the maximum dimensions that specify the global and local work-item IDs on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the maximum dimensions (CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) that specify the global and local work-item IDs
+		 *         of the device associated with this device controller.
+		 */
+		cl_uint getMaxWorkItemDimensions() const { return m_maxWorkItemDims; }
+
+		//! Returns the size (in bytes) of the local memory arena on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the size of the local memory arena (CL_DEVICE_LOCAL_MEM_SIZE) in bytes on the device associated with this device controller.
 		 */
 		cl_ulong getLocalMemSize() const { return m_localMemSize; }
 		
+		//! Returns the type of local memory on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the type of local memory (CL_DEVICE_LOCAL_MEM_TYPE) on the device associated with this device controller.
+		 */
+		cl_device_local_mem_type getLocalMemType() const { return m_localMemType; }
+		
+		//! Returns the size (in bytes) of the global device memory on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the size of the global device memory (CL_DEVICE_GLOBAL_MEM_SIZE) in bytes on the device associated with this device controller.
+		 */
+		cl_ulong getGlobalMemSize() const { return m_globalMemSize; }
+
 		//! Returns true if the host and the associated device have a unified memory subsystem.
 		/**
+		 * This value is cached.
+		 *
 		 * @return true if the host and the associated device have a unified memory subsystem
 		 *         (CL_DEVICE_HOST_UNIFIED_MEMORY), false otherwise.
 		 */
-		cl_uint getHostUnifiedMemory() const { return m_hostUnifiedMemory; }
+		cl_bool getHostUnifiedMemory() const { return m_hostUnifiedMemory; }
 
 		//! Returns the minimum alignment of memory base addresses of the associated device.
 		/**
+		 * This value is cached.
+		 *
 		 * @return the minimum alignment of memory base addresses (CL_DEVICE_MEM_BASE_ADDR_ALIGN)
 		 * of the device associated with this device controller.
 		 */
 		cl_uint getMemBaseAddrAlign() const { return m_memBaseAddrAlign; }
 
+		//! Returns the size (in bytes) of global memory cache on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the size of global memory cache (CL_DEVICE_GLOBAL_MEM_CACHE_SIZE) in bytes on the device associated with this device controller.
+		 */
+		cl_ulong getGlobalMemCacheSize() const { return m_globalMemCacheSize; }
+
+		//! Returns the type of global memory cache on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the type of global memory cache (CL_DEVICE_GLOBAL_MEM_CACHE_TYPE) on the device associated with this device controller.
+		 */
+		cl_device_mem_cache_type getGlobalMemCacheType() const { return m_globalMemCacheType; }
+
+		//! Returns the size (in bytes) of the global memory cache line on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the size of global memory cache line (CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE) in bytes on the device associated with this device controller.
+		 */
+		cl_uint getGlobalMemCachelineSize() const { return m_globalMemCachelineSize; }
+
+		//! Returns the maximal size (in bytes) of memory object allocation on the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the maximal size of memory object allocation (CL_DEVICE_MAX_MEM_ALLOC) in bytes on the device associated with this device controller.
+		 */
+		cl_ulong getMaxMemAllocSize() const { return m_maxMemAllocSize; }
+
 		//! Returns the supported command-queue properties of the associated device.
 		/**
+		 * This value is cached.
+		 *
 		 * @return the supported command-queue properties (CL_DEVICE_QUEUE_PROPERTIES)
 		 *         of the device associated with this device controller. These may differ from the
 		 *         properties of the command-queue of this device controller.
 		 */
 		cl_command_queue_properties getSupportedCommandQueueProperties() const { return m_scqProperties; }
+
+		//! Returns the execution capabilities of the associated device.
+		/**
+		 * This value is cached.
+		 *
+		 * @return the execution capabilities (CL_DEVICE_EXECUTION_CAPABILITIES)
+		 *         of the device associated with this device controller.
+		 */
+		cl_device_exec_capabilities getExecutionCapabilities() const { return m_execCapabilities; }
 
 		//! Returns the OpenCL version supported by the associated device.
 		/**
@@ -219,6 +375,20 @@ namespace tbt
 		 */
 		std::string getVersion() const;
 
+		//! Returns the highest OpenCL C version supported by the compiler for the associated device.
+		/**
+		 * @return the highest OpenCL C version (CL_DEVICE_OPENCL_C_VERSION) supported by the compiler
+		 *         for the device associated with this device controller.
+		 */
+		std::string getOpenCLCVersion() const;
+
+		//! Returns the profile name supported by the associated device.
+		/**
+		 * @return the profile name (CL_DEVICE_PROFILE) supported by the device associated with
+		 *         this device controller.
+		 */
+		std::string getProfile() const;
+
 		//! Returns the OpenCL software driver version of the associated device.
 		/**
 		 * @return the OpenCL software driver version (CL_DRIVER_VERSION) of the device associated
@@ -226,12 +396,22 @@ namespace tbt
 		 */
 		std::string getDriverVersion() const;
 
+		//@}
+
+
+		/** @name Device Extensions
+		 * These methods allow to query OpenCL extensions (which are also supported by TBT) supported
+		 * by the associated device and to create a header for OpenCL programs enabling a set of
+		 * required and optional OpenCL extensions.
+		 */
+		//@{
+
 		//! Returns the OpenCL extensions supported by the associated device.
 		/**
 		 * @return a bitvector where each bit represents an extensions according to the definition by TBT;
-		 *         currently supported are TBT_EXT_FP64, TBT_EXT_PRINTF, TBT_EXT_INT64_BASE_ATOMICS,
-		 *         and TBT_EXT_INT64_EXTENDED_ATOMICS. The device may support further extensions not
-		 *         yet supported by TBT.
+		 *         currently supported are TBT_EXT_FP64, TBT_EXT_FP16, TBT_EXT_PRINTF, TBT_EXT_INT64_BASE_ATOMICS,
+		 *         TBT_EXT_INT64_EXTENDED_ATOMICS, and TBT_EXT_BYTE_ADDRESSABLE_STORE. The device may 
+		 *         upport further extensions not yet supported by TBT.
 		 */
 		cl_uint getExtensions() const {
 			return m_supportedExtensions;
@@ -242,8 +422,15 @@ namespace tbt
 		 * This header is used for building OpenCL programs for this device. It is automatically prepended
 		 * to OpenCL programs and enables the OpenCL extensions as selected in \ref globalConfig if
 		 * supported by the associated device.
+		 *
+		 * @param[in] requiredExt  is a bitvector specifying the required OpenCL extensions; if the device does
+		 *                         not support all required extensions, an exception will be thrown.
+		 * @param[in] optionalExt  is a bitvector specifying optional OpenCL extensions; all optional extensions
+		 *                         supported by the device will be enabled.
+		 * @return                 a string containing the OpenCL header enabling all required extensions and
+		 *                         all optional extensions supported by the device.
 		 */
-		const std::string getOpenCLHeader(cl_uint requiredExt, cl_uint optionalExt) const;
+		const std::string createOpenCLHeader(cl_uint requiredExt, cl_uint optionalExt) const;
 
 		//@}
 
