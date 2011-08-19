@@ -273,7 +273,7 @@ namespace tbt {
 		}
 
 		string progstr(istreambuf_iterator<char>(sourceFile), (istreambuf_iterator<char>()));
-		const string &header = devCon->getOpenCLHeader(requiredExt, optionalExt);
+		const string &header = devCon->createOpenCLHeader(requiredExt, optionalExt);
 
 		cl::Program::Sources source;
 		source.push_back(make_pair(header .c_str(), header. length()));
@@ -351,4 +351,21 @@ namespace tbt {
 		return num;
 	}
 
+
+	std::string Utility::printBytes(cl_ulong bytes)
+	{
+		std::ostringstream str;
+
+		if(bytes < 1024)
+			str << bytes << " Bytes";
+		else if(bytes < 1024*1024) {
+			cl_ulong kb = (cl_ulong) floor(((double)bytes) / (1024.0) + 0.5);
+			str << kb << " KB";
+		} else {
+			cl_ulong mb = (cl_ulong) floor(((double)bytes) / (1024.0*1024.0) + 0.5);
+			str << mb << " MB";
+		}
+
+		return str.str();
+	}
 }

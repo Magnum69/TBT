@@ -134,6 +134,8 @@ namespace tbt
 		static void alignedFree(void *ptr);
 
 		static int firstBit(cl_uint bits);
+
+		static std::string printBytes(cl_ulong bytes);
 	};
 
 }
