@@ -190,7 +190,7 @@ namespace tbt
 		return str;
 	}
 
-
+	
 	std::ostream &DeviceController::displayInfo(std::ostream &os)
 	{
 		os << "    name:   " << getName() << endl;

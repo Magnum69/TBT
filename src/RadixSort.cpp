@@ -23,7 +23,7 @@ using namespace std;
 
 namespace tbt
 {
-
+	
 	cl::Kernel RadixSort::m_kernelCounting;
 	cl::Kernel RadixSort::m_kernelPermute;
 
@@ -41,7 +41,8 @@ namespace tbt
 			buildProgramFromSourceRel("radix.cl");
 
 			// create kernels
-			m_kernelCounting = createKernel("radixCounting_gpu");
+			//m_kernelCounting = createKernel("radixCounting_gpu");
+			m_kernelCounting = createKernel("radixCounting_gpu_atomic");
 			m_kernelPermute  = createKernel("radixPermute_gpu");
 
 			m_kernelPrescanSum        = createKernel("prescanSum4");

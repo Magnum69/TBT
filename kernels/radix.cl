@@ -369,6 +369,48 @@ void radixCounting_gpu(
 }
 
 
+__kernel __attribute__((reqd_work_group_size(LOCAL_WORK, 1, 1)))
+void radixCounting_gpu_atomic(
+	__global uint const * restrict a,
+    __global uint       * restrict gcount,
+    uint shift)
+{
+	size_t localID   = get_local_id(0);
+	size_t globalID  = get_global_id(0);
+	size_t groupID   = get_group_id(0);
+	size_t numGroups = get_num_groups(0);
+
+	__local uint count[BASE];
+
+	__global uint4 *a4 = (__global uint4 *) (a + groupID*TOTAL_GROUP_ELEMENTS);
+	__local uint4 *count4  = (__local uint4 *) count;
+	
+	count4[localID] = 0;
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	uint4 mask4 = (uint4)(0xffu,0xffu,0xffu,0xffu);
+
+	for(size_t i = 0; i < (TOTAL_GROUP_ELEMENTS/4); i += LOCAL_WORK) {
+		uint4 bucket4 = ( a4[i+localID] >> shift ) & mask4;
+
+		atomic_inc(&count[bucket4.x]);
+		atomic_inc(&count[bucket4.y]);
+		atomic_inc(&count[bucket4.z]);
+		atomic_inc(&count[bucket4.w]);
+	}
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
+	
+	uint4 sum4 = count4[localID];
+	
+	gcount[(4*localID  ) * numGroups + groupID] = sum4.x;
+	gcount[(4*localID+1) * numGroups + groupID] = sum4.y;
+	gcount[(4*localID+2) * numGroups + groupID] = sum4.z;
+	gcount[(4*localID+3) * numGroups + groupID] = sum4.w;
+}
+
+
 /*---------------------------------------------------------
                         radixPermute_gpu
 
