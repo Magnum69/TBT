@@ -78,6 +78,8 @@ namespace tbt
 		double totalTime() const { return m_totalTime; }
 
 
+		static double testKernelPrescanReduce(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C);
+
 	private:
 		void runSingle(DeviceArray<cl_uint> &bufferSrc, DeviceArray<cl_uint> &bufferTgt, cl_uint shift);
 

@@ -5,6 +5,71 @@
 #define RADIX 8
 #define BASE (1 << RADIX)
 
+#define MAX_LOCAL_WORK 256
+
+/*---------------------------------------------------------
+                          prescanReduce
+  ---------------------------------------------------------*/
+
+  // assume work-group size = 256
+
+__kernel
+__attribute__((reqd_work_group_size(MAX_LOCAL_WORK, 1, 1)))
+void prescanReduce(
+	__global uint const * restrict a,
+	__global uint       * restrict sum,
+	uint m,
+	uint n)
+{
+	size_t localID = get_local_id(0);
+	size_t groupID = get_group_id(0);
+
+	__local uint lsum[MAX_LOCAL_WORK];
+	
+	m >>= 2;
+	__global uint4 *a4 = (__global uint4 *)a;
+
+	size_t startIndex = m*groupID;
+	size_t stopIndex = startIndex+m;
+
+	uint4 sum4 = 0;
+	for(size_t i = startIndex; i < stopIndex; i += MAX_LOCAL_WORK)
+		sum4 += a4[i+localID];
+
+	lsum[localID] = sum4.x+sum4.y+sum4.z+sum4.w;
+
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	if(localID < 64) {
+		uint t1 = lsum[localID    ] + lsum[localID+ 64];
+		uint t2 = lsum[localID+128] + lsum[localID+192];
+		lsum[localID] = t1 + t2;
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 64
+
+	if(localID < 16) {
+		uint t1 = lsum[localID   ] + lsum[localID+16];
+		uint t2 = lsum[localID+32] + lsum[localID+48];
+		lsum[localID] = t1 + t2;
+		//printf("group = %d, local = %d: %d\n", (int)groupID, (int)localID, (int)lsum[localID]);
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 16
+
+	if(localID < 4) {
+		uint t1 = lsum[localID   ] + lsum[localID+ 4];
+		uint t2 = lsum[localID+ 8] + lsum[localID+12];
+		lsum[localID] = t1 + t2;
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 4
+
+	if(localID == 0)
+		sum[groupID] = lsum[0]+lsum[1]+lsum[2]+lsum[3];
+}
+
 
 /*---------------------------------------------------------
                            prescanSum
