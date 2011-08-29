@@ -243,9 +243,9 @@ namespace tbt {
 					
 							// create program from binary file
 							cl::Program::Binaries binaries(1, make_pair(buffer, size));
-							cl::vector<cl_int> binaryStatus(1);
+							cl::Program program;
 							try {
-								cl::Program program(context, devices, binaries, &binaryStatus);
+								program = cl::Program(context, devices, binaries);
 								program.build(devices);
 
 								delete [] buffer;
@@ -253,7 +253,10 @@ namespace tbt {
 
 							// in case of error when loading binary, just go on and create new binary (below)
 							} catch(cl::Error error) {
-								cerr << "Error while creating / building program!" << endl;
+								cerr << "FATAL! " << error.err() << " " << error.what() << endl;
+								//string msg = "Error while creating / building program!\nBuild-Log:\n";
+								//msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devCon->getDevice());
+								//cerr <<msg << endl;
 								delete [] buffer;
 							}
 						}
