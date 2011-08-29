@@ -14,8 +14,193 @@
   // assume work-group size = 256
 
 __kernel
-__attribute__((reqd_work_group_size(MAX_LOCAL_WORK, 1, 1)))
+//__attribute__((reqd_work_group_size(MAX_LOCAL_WORK, 1, 1)))
 void prescanReduce(
+	__global uint const * restrict a,
+	__global uint       * restrict sum,
+	uint m,
+	uint n)
+{
+	size_t localID = get_local_id(0);
+	size_t groupID = get_group_id(0);
+
+	__local uint lsum[MAX_LOCAL_WORK];
+	
+	m >>= 2;
+	__global uint4 *a4 = (__global uint4 *)a;
+
+	size_t startIndex = m*groupID;
+	size_t stopIndex = startIndex+m;
+
+	uint4 sum4 = 0;
+	for(size_t i = startIndex; i < stopIndex; i += MAX_LOCAL_WORK)
+		sum4 += a4[i+localID];
+
+	lsum[localID] = sum4.x+sum4.y+sum4.z+sum4.w;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for(size_t offset = 128; offset >= 2; offset >>= 1) {
+		if(localID < offset)
+			lsum[localID] += lsum[localID+offset];
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
+
+	if(localID == 0)
+		sum[groupID] = lsum[localID] + lsum[localID+1];
+}
+
+
+__kernel
+void prescanLocal(
+	__global uint * restrict sum)
+{
+	size_t localID   = get_local_id(0);
+	size_t localWork = get_local_size(0);
+
+	__local uint lsum[MAX_LOCAL_WORK+MAX_LOCAL_WORK/2];
+	size_t off = localWork/2;
+
+	__global uint4 *sum4 = (__global uint4 *)sum;
+
+	if(localID < off)
+		lsum[localID] = 0;
+
+	size_t idx = localID+off;
+
+	uint4 val = sum4[localID];
+	lsum[idx] = val.x + val.y + val.z + val.w;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for(size_t d = 1; d < localWork; d <<= 1) {
+		lsum[idx] += lsum[idx-d];
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
+
+	uint p = lsum[idx-1];
+	uint4 result;
+	result.x = p;  p += val.x;
+	result.y = p;  p += val.y;
+	result.z = p;  p += val.z;
+	result.w = p;
+	sum4[localID] = result;
+}
+
+
+__kernel
+void prescanBottom(
+	__global uint * restrict a,
+	__global uint const * restrict sum,
+	uint m,
+	uint n)
+{
+	size_t localID   = get_local_id(0);
+	size_t localWork = get_local_size(0);
+
+	m >>= 2;
+	__global uint4 *a4 = (__global uint4 *)a;
+	__local uint lsum[MAX_LOCAL_WORK+MAX_LOCAL_WORK/2];
+
+	size_t off = localWork/2;
+	size_t idx = localID+off;
+
+	uint offset = (localID == 0) ? sum[get_group_id(0)] : 0;
+
+	for(size_t count = 0; count < m; count += localWork, a4 += localWork)
+	{
+		if(localID < off)
+			lsum[localID] = 0;
+
+		uint4 val = a4[localID];
+		lsum[idx] = offset + val.x + val.y + val.z + val.w;
+
+		barrier(CLK_LOCAL_MEM_FENCE);
+
+		for(size_t d = 1; d < localWork; d <<= 1) {
+			lsum[idx] += lsum[idx-d];
+			barrier(CLK_LOCAL_MEM_FENCE);
+		}
+
+		uint p = (localID == 0) ? offset : lsum[idx-1];
+		uint4 result;
+		result.x = p;  p += val.x;
+		result.y = p;  p += val.y;
+		result.z = p;  p += val.z;
+		result.w = p;
+		a4[localID] = result;
+
+		offset = (localID == 0) ? lsum[localWork-1] : 0;
+	}
+}
+
+
+__kernel
+void prescanLocal2(
+	__global uint * restrict sum)
+{
+	size_t localID   = get_local_id(0);
+	size_t localWork = get_local_size(0);
+
+	__local uint lsum[MAX_LOCAL_WORK];
+
+	__global uint4 *sum4 = (__global uint4 *)sum;
+
+	uint4 val = sum4[localID];
+	lsum[localID] = val.x + val.y + val.z + val.w;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// up-sweep
+	uint d2;
+	uint dstop = localWork >> 1;
+	for(uint d = 1; d < dstop; d = d2)
+	{
+		d2 = 2*d;
+		if((localID+1) % d2 == 0) {
+			lsum[localID] += lsum[localID-d];
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
+
+	// clear + first step of down-sweep
+	if(localID == localWork-1) {
+		uint indexLeft = localID - dstop;
+
+		lsum[localID] = lsum[indexLeft];
+		lsum[indexLeft] = 0;
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// down-sweep
+	for(uint d = dstop; d >= 2; d = d2)
+	{
+		d2 = d/2;
+		if((localID+1) % d == 0) {
+			uint indexLeft = localID-d2;
+
+			uint t = lsum[indexLeft];
+			lsum[indexLeft] = lsum[localID];
+			lsum[localID] += t;
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
+
+	uint p = lsum[localID];
+	uint4 result;
+	result.x = p;  p += val.x;
+	result.y = p;  p += val.y;
+	result.z = p;  p += val.z;
+	result.w = p;
+	sum4[localID] = result;
+}
+
+
+
+__kernel
+__attribute__((reqd_work_group_size(MAX_LOCAL_WORK, 1, 1)))
+void tester(
 	__global uint const * restrict a,
 	__global uint       * restrict sum,
 	uint m,
@@ -41,33 +226,12 @@ void prescanReduce(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	if(localID < 64) {
-		uint t1 = lsum[localID    ] + lsum[localID+ 64];
-		uint t2 = lsum[localID+128] + lsum[localID+192];
-		lsum[localID] = t1 + t2;
+	if(localID == 0) {
+		uint gsum = 0;
+		for(size_t i = 0; i < MAX_LOCAL_WORK; i++)
+			gsum += lsum[i];
+		sum[groupID] = gsum;
 	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 64
-
-	if(localID < 16) {
-		uint t1 = lsum[localID   ] + lsum[localID+16];
-		uint t2 = lsum[localID+32] + lsum[localID+48];
-		lsum[localID] = t1 + t2;
-		//printf("group = %d, local = %d: %d\n", (int)groupID, (int)localID, (int)lsum[localID]);
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 16
-
-	if(localID < 4) {
-		uint t1 = lsum[localID   ] + lsum[localID+ 4];
-		uint t2 = lsum[localID+ 8] + lsum[localID+12];
-		lsum[localID] = t1 + t2;
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);  // not required for wave-front size >= 4
-
-	if(localID == 0)
-		sum[groupID] = lsum[0]+lsum[1]+lsum[2]+lsum[3];
 }
 
 

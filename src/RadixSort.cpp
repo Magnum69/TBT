@@ -34,36 +34,23 @@ namespace tbt
 	cl::Kernel RadixSort::m_kernelPrescanUpSweep;
 	cl::Kernel RadixSort::m_kernelPrescanDownSweep;
 
+	cl::Kernel RadixSort::m_kernelPrescanReduce;
+	cl::Kernel RadixSort::m_kernelPrescanLocal;
+	cl::Kernel RadixSort::m_kernelPrescanBottom;
+	cl::Kernel RadixSort::m_kernelTester;
 
-	double RadixSort::testKernelPrescanReduce(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C)
-	{
-		const cl_uint m = n / C;
-		const cl_uint s = 256;
-
-		buildProgramFromSourceRel("radix.cl", TBT_EXT_PRINTF);
-		cl::Kernel kernel = createKernel("prescanReduce");
-
-		kernel.setArg<cl::Buffer>(0, a);
-		kernel.setArg<cl::Buffer>(1, sum);
-		kernel.setArg<cl_uint>   (2, m);
-		kernel.setArg<cl_uint>   (3, n);
-
-		DeviceController *devCon = a.getDeviceController();
-		cl::Event ev;
-
-		devCon->enqueue1DRangeKernel(kernel, C*s, s, 0, &ev);
-		devCon->finish();
-
-		return getEventTime(ev);
-	}
-
-
+	
 	void RadixSort::assureKernelsLoaded()
 	{
 		if(!isProgramLoaded()) {
 			buildProgramFromSourceRel("radix.cl");
 
 			// create kernels
+			m_kernelPrescanReduce = createKernel("prescanReduce");
+			m_kernelPrescanLocal = createKernel("prescanLocal");
+			m_kernelPrescanBottom = createKernel("prescanBottom");
+			m_kernelTester = createKernel("tester");
+
 			//m_kernelCounting = createKernel("radixCounting_gpu");
 			m_kernelCounting = createKernel("radixCounting_gpu_atomic");
 			m_kernelPermute  = createKernel("radixPermute_gpu");
@@ -75,6 +62,90 @@ namespace tbt
 			m_kernelPrescanUpSweep   = createKernel("prescanUpSweep_gpu");
 			m_kernelPrescanDownSweep = createKernel("prescanDownSweep_gpu");
 		}
+	}
+
+
+	double RadixSort::testKernelPrescanReduce(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C)
+	{
+		const cl_uint m = n / C;
+		const cl_uint s = 256;
+
+		assureKernelsLoaded();
+
+		m_kernelPrescanReduce.setArg<cl::Buffer>(0, a);
+		m_kernelPrescanReduce.setArg<cl::Buffer>(1, sum);
+		m_kernelPrescanReduce.setArg<cl_uint>   (2, m);
+		m_kernelPrescanReduce.setArg<cl_uint>   (3, n);
+
+		DeviceController *devCon = a.getDeviceController();
+		cl::Event ev;
+
+		devCon->enqueue1DRangeKernel(m_kernelPrescanReduce, C*s, s, 0, &ev);
+		ev.wait();
+
+		return getEventTime(ev);
+	}
+
+	
+	double RadixSort::testKernelPrescanLocal(DeviceArray<cl_uint> &sum, cl_uint C)
+	{
+		assureKernelsLoaded();
+
+		m_kernelPrescanLocal.setArg<cl::Buffer>(0, sum);
+
+		DeviceController *devCon = sum.getDeviceController();
+		cl::Event ev;
+
+		devCon->enqueue1DRangeKernel(m_kernelPrescanLocal, C/4, C/4, 0, &ev);
+		ev.wait();
+
+		return getEventTime(ev);
+	}
+
+
+	double RadixSort::testKernelPrescanBottom(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C)
+	{
+		const cl_uint m = n / C;
+		const cl_uint s = 256;
+
+		assureKernelsLoaded();
+
+		m_kernelPrescanBottom.setArg<cl::Buffer>(0, a);
+		m_kernelPrescanBottom.setArg<cl::Buffer>(1, sum);
+		m_kernelPrescanBottom.setArg<cl_uint>   (2, m);
+		m_kernelPrescanBottom.setArg<cl_uint>   (3, n);
+
+		DeviceController *devCon = a.getDeviceController();
+		cl::Event ev;
+
+		devCon->enqueue1DRangeKernel(m_kernelPrescanBottom, C*s, s, 0, &ev);
+		ev.wait();
+
+		return getEventTime(ev);
+	}
+
+	
+	double RadixSort::testKernelTester(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C)
+	{
+		const cl_uint m = n / C;
+		const cl_uint s = 256;
+
+		//buildProgramFromSourceRel("radix.cl"/*, TBT_EXT_PRINTF*/);
+		//cl::Kernel kernel = createKernel("prescanReduce");
+		assureKernelsLoaded();
+
+		m_kernelTester.setArg<cl::Buffer>(0, a);
+		m_kernelTester.setArg<cl::Buffer>(1, sum);
+		m_kernelTester.setArg<cl_uint>   (2, m);
+		m_kernelTester.setArg<cl_uint>   (3, n);
+
+		DeviceController *devCon = a.getDeviceController();
+		cl::Event ev;
+
+		devCon->enqueue1DRangeKernel(m_kernelTester, C*s, s, 0, &ev);
+		ev.wait();
+
+		return getEventTime(ev);
 	}
 
 
@@ -103,10 +174,10 @@ namespace tbt
 		cl_uint rem = m_prescanInterval % 4;
 		if(rem > 0) m_prescanInterval += 4-rem;
 
-		//cout << "n = " << m_nElements << endl;
-		//cout << "m = " << m_prescanInterval << endl;
-		//cout << "num groups         = " << m_numGroups << endl;
-		//cout << "num prescan groups = " << m_numPrescanGroups << endl;
+		cout << "n = " << m_nElements << endl;
+		cout << "m = " << m_prescanInterval << endl;
+		cout << "num groups         = " << m_numGroups << endl;
+		cout << "num prescan groups = " << m_numPrescanGroups << endl;
 
 		// create device arrays
 		DeviceArray<cl_uint> array_b(m_devCon, n);

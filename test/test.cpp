@@ -9,42 +9,111 @@ using namespace std;
 int main()
 {
 	const size_t C = 512;
-	const size_t m = 256 * 4;
+	const size_t m = 256 * 128;
 	const size_t n = C*m;
+	const int numIter = 1;
 
-	tbt::createContext(CL_DEVICE_TYPE_CPU, CL_QUEUE_PROFILING_ENABLE);
-	cout << "Platform:" << endl;
-	tbt::displayPlatformInfo(cout) << endl;
+	try {
 
-	cout << "Device:" << endl;
-	tbt::DeviceController *devCon = tbt::getDeviceController();
-	devCon->displayInfo() << endl;
+		tbt::createContext(CL_DEVICE_TYPE_GPU, CL_QUEUE_PROFILING_ENABLE);
+		cout << "Platform:" << endl;
+		tbt::displayPlatformInfo(cout) << endl;
 
-	cout << "n = " << n << endl;
-	cout << "C = " << C << endl;
-	cout << "m = " << m << endl;
+		cout << "Device:" << endl;
+		tbt::DeviceController *devCon = tbt::getDeviceController();
+		devCon->displayInfo() << endl;
 
-	tbt::RadixSort radixSort;
-	tbt::MappedArray<cl_uint> a(devCon, n);
+		cout << "n = " << n << endl;
+		cout << "C = " << C << endl;
+		cout << "m = " << m << endl;
 
-	for(size_t i = 0; i < n; i++)
-		a[i] = 1; //(rand() % 500);
-	a.mapHostToDevice();
+		tbt::RadixSort radixSort;
+		tbt::MappedArray<cl_uint> a(devCon, n);
+		tbt::HostArray<cl_uint> prescan(C);
 
-	tbt::MappedArray<cl_uint> sum(devCon, C);
-
-	double t = radixSort.testKernelPrescanReduce(a, sum, n, C);
-	sum.mapDeviceToHost();
-
-	cout << "kernel time: " << t << " ms" << endl;
-
-	for(size_t i = 0; i < C; i++) {
 		cl_uint s = 0;
-		for(size_t j = 0; j < m; j++) {
-			s += a[m*i+j];
+		for(size_t i = 0; i < n; i++) {
+			if(i % m == 0) {
+				prescan[i / m] = s;
+			}
+			a[i] = (rand() % 50);
+			s += a[i];
 		}
-		if(s != sum[i])
-			cout << i << ": ERROR: " << s << " != " << sum[i] << endl;
+
+		a.mapHostToDeviceBlocking();
+
+		tbt::MappedArray<cl_uint> sum(devCon, C);
+		radixSort.testKernelTester(a, sum, n, C);
+
+		double tRed = 0, tLoc = 0, tBot = 0;
+		for(int i = 0; i < numIter; i++) {
+			double t1 = radixSort.testKernelPrescanReduce(a, sum, n, C);
+			double t2 = radixSort.testKernelPrescanLocal(sum, C);
+			double t3 = radixSort.testKernelPrescanBottom(a, sum, n, C);
+			tRed += t1;
+			tLoc += t2;
+			tBot += t3;
+			cout << t1 << ", " << t2 << ", " << t3 << endl;
+		}
+		tRed = tRed / numIter;
+		tLoc = tLoc / numIter;
+		tBot = tBot / numIter;
+
+		sum.mapDeviceToHostBlocking();
+
+		double gb = (n+C)*sizeof(cl_uint) / (1024.0*1024.0*1024.0);
+		double bw = 1000.0 * gb / tRed;
+
+		cout << "Reduce:" << endl;
+		cout << "kernel time: " << tRed << " ms" << endl;
+		cout << "data:        " << gb << " GB" << endl;
+		cout << "bandwidth:   " << bw << " GB/s" << endl;
+
+		gb = 2*C*sizeof(cl_uint) / (1024.0*1024.0*1024.0);
+		bw = 1000.0 * gb / tLoc;
+
+		cout << "\nPrescanLocal:" << endl;
+		cout << "kernel time: " << tLoc << " ms" << endl;
+		cout << "data:        " << gb << " GB" << endl;
+		cout << "bandwidth:   " << bw << " GB/s" << endl;
+
+		gb = (2*n+C)*sizeof(cl_uint) / (1024.0*1024.0*1024.0);
+		bw = 1000.0 * gb / tBot;
+
+		cout << "\nPrescanBottom:" << endl;
+		cout << "kernel time: " << tBot << " ms" << endl;
+		cout << "data:        " << gb << " GB" << endl;
+		cout << "bandwidth:   " << bw << " GB/s" << endl;
+
+		gb = (3*n+4*C)*sizeof(cl_uint) / (1024.0*1024.0*1024.0);
+		bw = 1000.0 * gb / (tRed+tLoc+tBot);
+
+		cout << "\ntotal:" << endl;
+		cout << "kernel time: " << (tRed+tLoc+tBot) << " ms" << endl;
+		cout << "data:        " << gb << " GB" << endl;
+		cout << "bandwidth:   " << bw << " GB/s" << endl;
+
+		cout << "\nchecking..." << flush;
+
+		int numErrors = 0;
+		for(size_t i = 0; i < C; i++) {
+		//	cl_uint s = 0;
+		//	for(size_t j = 0; j < m; j++) {
+		//		s += a[m*i+j];
+		//	}
+			if(prescan[i] != sum[i]) {
+				numErrors++;
+				cout << i << ": ERROR: " << prescan[i] << " != " << sum[i] << endl;
+			}
+		}
+
+		if(numErrors == 0)
+			cout << "ok." << endl;
+		else
+			cout << " " << numErrors << " ERRORS!" << endl;
+
+	} catch(cl::Error err) {
+		cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << endl;
 	}
 
 	return 0;

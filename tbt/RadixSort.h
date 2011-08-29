@@ -25,6 +25,11 @@ namespace tbt
 		static cl::Kernel m_kernelPrescanUpSweep;
 		static cl::Kernel m_kernelPrescanDownSweep;
 
+		static cl::Kernel m_kernelPrescanReduce;
+		static cl::Kernel m_kernelPrescanLocal;
+		static cl::Kernel m_kernelPrescanBottom;
+		static cl::Kernel m_kernelTester;
+
 		cl_uint m_nElements;
 		cl_uint m_numGroups;
 		cl_uint m_numPrescanGroups;
@@ -79,6 +84,9 @@ namespace tbt
 
 
 		static double testKernelPrescanReduce(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C);
+		static double testKernelPrescanLocal(DeviceArray<cl_uint> &sum, cl_uint C);
+		static double testKernelPrescanBottom(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C);
+		static double testKernelTester(DeviceArray<cl_uint> &a, DeviceArray<cl_uint> &sum, cl_uint n, cl_uint C);
 
 	private:
 		void runSingle(DeviceArray<cl_uint> &bufferSrc, DeviceArray<cl_uint> &bufferTgt, cl_uint shift);
