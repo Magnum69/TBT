@@ -253,11 +253,12 @@ namespace tbt {
 
 							// in case of error when loading binary, just go on and create new binary (below)
 							} catch(cl::Error error) {
-								cerr << "FATAL! " << error.err() << " " << error.what() << endl;
-								//string msg = "Error while creating / building program!\nBuild-Log:\n";
-								//msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devCon->getDevice());
+								//cerr << "FATAL! " << error.err() << " " << error.what() << endl;
+								string msg = "Error while creating / building program!\nBuild-Log:\n";
+								msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devCon->getDevice());
 								//cerr <<msg << endl;
 								delete [] buffer;
+								throw Error(msg.c_str(), Error::ecKernelCompileError);
 							}
 						}
 
@@ -290,7 +291,7 @@ namespace tbt {
 			if(err.err() == CL_BUILD_PROGRAM_FAILURE) {
 				string msg = "Could not compile kernels.\nBuild-Log:\n";
 				msg += program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devCon->getDevice());
-				throw Error(msg.c_str(), Error::ecKernelCompileError);
+				throw Error(msg, Error::ecKernelCompileError);
 
 			} else
 				throw;
@@ -315,13 +316,18 @@ namespace tbt {
 				size_t bytesWritten = fwrite(buffer, 1, size, pFile);
 				fclose(pFile);
 
-				if(bytesWritten < size)
+				if(bytesWritten < size) {
+					delete [] buffer;
 					throw Error("OclBase::buildProgram: Could not write binary file to cache!", Error::ecProgramCacheError);
+				}
 
-				if(writeProgramInfoFile(infoName.c_str(), devCon, extensions) == false)
+				if(writeProgramInfoFile(infoName.c_str(), devCon, extensions) == false) {
+					delete [] buffer;
 					throw Error("OclBase::buildProgram: Could not write info file to cache!", Error::ecProgramCacheError);
+				}
 				
 			} else {
+				delete [] buffer;
 				throw Error("OclBase::buildProgram: Could not cache binary file!", Error::ecProgramCacheError);
 			}
 
