@@ -36,6 +36,7 @@ namespace tbt
 
 	cl::Kernel RadixSort::m_kernelPrescanReduce;
 	cl::Kernel RadixSort::m_kernelPrescanLocal;
+	cl::Kernel RadixSort::m_kernelPrescanLocal64;
 	cl::Kernel RadixSort::m_kernelPrescanBottom;
 	cl::Kernel RadixSort::m_kernelTester;
 
@@ -43,16 +44,17 @@ namespace tbt
 	void RadixSort::assureKernelsLoaded()
 	{
 		if(!isProgramLoaded()) {
-			buildProgramFromSourceRel("radix.cl");
+			buildProgramFromSourceRel("radix.cl"/*, TBT_EXT_PRINTF*/);
 
 			// create kernels
 			m_kernelPrescanReduce = createKernel("prescanReduce");
 			m_kernelPrescanLocal = createKernel("prescanLocal");
+			m_kernelPrescanLocal64 = createKernel("prescanLocal64");
 			m_kernelPrescanBottom = createKernel("prescanBottom");
 			m_kernelTester = createKernel("tester");
 
-			//m_kernelCounting = createKernel("radixCounting_gpu");
-			m_kernelCounting = createKernel("radixCounting_gpu_atomic");
+			m_kernelCounting = createKernel("radixCounting_gpu");
+			//m_kernelCounting = createKernel("radixCounting_gpu_atomic");
 			m_kernelPermute  = createKernel("radixPermute_gpu");
 
 			m_kernelPrescanSum        = createKernel("prescanSum4");
@@ -90,13 +92,20 @@ namespace tbt
 	double RadixSort::testKernelPrescanLocal(DeviceArray<cl_uint> &sum, cl_uint C)
 	{
 		assureKernelsLoaded();
-
-		m_kernelPrescanLocal.setArg<cl::Buffer>(0, sum);
-
+		
 		DeviceController *devCon = sum.getDeviceController();
 		cl::Event ev;
 
-		devCon->enqueue1DRangeKernel(m_kernelPrescanLocal, C/4, C/4, 0, &ev);
+		bool simd64 = ( devCon->getType() == CL_DEVICE_TYPE_GPU ) && ( devCon->getWGSizeMultiple1D(m_kernelPrescanLocal) >= 64 );
+		size_t lw = C/4;
+
+		if(lw == 64 && simd64) {
+			m_kernelPrescanLocal64.setArg<cl::Buffer>(0, sum);
+			devCon->enqueue1DRangeKernel(m_kernelPrescanLocal64, lw, lw, 0, &ev);
+		} else {
+			m_kernelPrescanLocal.setArg<cl::Buffer>(0, sum);
+			devCon->enqueue1DRangeKernel(m_kernelPrescanLocal, lw, lw, 0, &ev);
+		}
 		ev.wait();
 
 		return getEventTime(ev);

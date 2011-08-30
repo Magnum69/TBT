@@ -27,6 +27,7 @@ namespace tbt
 
 		static cl::Kernel m_kernelPrescanReduce;
 		static cl::Kernel m_kernelPrescanLocal;
+		static cl::Kernel m_kernelPrescanLocal64;
 		static cl::Kernel m_kernelPrescanBottom;
 		static cl::Kernel m_kernelTester;
 

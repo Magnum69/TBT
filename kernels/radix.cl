@@ -51,12 +51,80 @@ void prescanReduce(
 }
 
 
+#define LOCAL_WORK_16 16
+
+__kernel
+__attribute__((reqd_work_group_size(LOCAL_WORK_16, 1, 1)))
+void prescanLocal16(
+	__global uint * restrict sum)
+{
+	size_t localID = get_local_id(0);
+
+	__local uint lsum[LOCAL_WORK_16 + LOCAL_WORK_16/2];
+	__global uint4 *sum4 = (__global uint4 *)sum;
+
+	if(localID < LOCAL_WORK_16/2)
+		lsum[localID] = 0;
+
+	size_t idx = localID + LOCAL_WORK_16/2;
+
+	uint4 val = sum4[localID];
+	lsum[idx] = val.x + val.y + val.z + val.w;
+
+	// unrolled for-loop
+	lsum[idx] += lsum[idx-1];
+	lsum[idx] += lsum[idx-2];
+	lsum[idx] += lsum[idx-4];
+	lsum[idx] += lsum[idx-8];
+
+	//for(size_t d = 1; d < LOCAL_WORK_16; d <<= 1) {
+	//	lsum[idx] += lsum[idx-d];
+	//}
+
+	uint p = lsum[idx-1];
+	uint4 result;
+	result.x = p;  p += val.x;
+	result.y = p;  p += val.y;
+	result.z = p;  p += val.z;
+	result.w = p;
+	sum4[localID] = result;
+}
+
+__kernel
+__attribute__((reqd_work_group_size(64, 1, 1)))
+void prescanLocal64(
+	__global uint * restrict sum)
+{
+	__local uint lsum[32+64];
+	__global uint4 *sum4 = (__global uint4 *)sum;
+
+	size_t localID = get_local_id(0);
+	size_t idx = localID + 32;
+
+	lsum[localID] = 0;
+
+	uint4 val = sum4[localID];
+	uint  sl  = val.x+val.y, sh = val.z+val.w;
+	uint4 res = (uint4)( sl+sh, val.y+sh, sh, val.w);
+	lsum[idx] = res.x;
+
+	lsum[idx] += lsum[idx- 1];
+	lsum[idx] += lsum[idx- 2];
+	lsum[idx] += lsum[idx- 4];
+	lsum[idx] += lsum[idx- 8];
+	lsum[idx] += lsum[idx-16];
+
+	uint p = lsum[idx] + lsum[idx-32];
+	sum4[localID] = (uint4)(p) - res;
+}
+
 __kernel
 void prescanLocal(
 	__global uint * restrict sum)
 {
 	size_t localID   = get_local_id(0);
 	size_t localWork = get_local_size(0);
+	//printf("localWork = %d\n", (int)localWork);
 
 	__local uint lsum[MAX_LOCAL_WORK+MAX_LOCAL_WORK/2];
 	size_t off = localWork/2;
@@ -69,22 +137,35 @@ void prescanLocal(
 	size_t idx = localID+off;
 
 	uint4 val = sum4[localID];
-	lsum[idx] = val.x + val.y + val.z + val.w;
+	//uint4 result = (uint4)( 0, val.x, val.x+val.y, val.x+val.y+val.z );
+	//lsum[idx] = result.w + val.w;
+	uint  sl  = val.x+val.y, sh = val.z+val.w;
+	uint4 res = (uint4)( sl+sh, val.y+sh, sh, val.w);
+	lsum[idx] = res.x;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(size_t d = 1; d < localWork; d <<= 1) {
-		lsum[idx] += lsum[idx-d];
+// The following code only works if we have exactly one wave-front
+//	for(size_t d = 1; d < localWork; d <<= 1) {
+//		lsum[idx] += lsum[idx-d];
+//		if(localID == 9 || localID == 8)
+//			printf("d = %d, lsum[%d] = %d\n", (int)d, (int)localID, (int)lsum[idx]);
+//		barrier(CLK_LOCAL_MEM_FENCE);
+//	}
+	for(size_t d = 1; d < localWork; d <<= 1)
+	{
+		uint v = lsum[idx-d];
+		barrier(CLK_LOCAL_MEM_FENCE);
+
+		lsum[idx] += v;
 		barrier(CLK_LOCAL_MEM_FENCE);
 	}
 
-	uint p = lsum[idx-1];
-	uint4 result;
-	result.x = p;  p += val.x;
-	result.y = p;  p += val.y;
-	result.z = p;  p += val.z;
-	result.w = p;
-	sum4[localID] = result;
+	//uint p = lsum[idx-1];
+	//result += (uint4)(p);
+	//sum4[localID] = result;
+	uint p = lsum[idx];
+	sum4[localID] = (uint4)(p) - res;
 }
 
 
@@ -504,7 +585,7 @@ void prescanDownSweep_gpu(
                       prescanSum_gpu
 					    (not used)
   ---------------------------------------------------------*/
-
+/*
 __kernel
 void prescanSum_gpu(
 	__global uint const * restrict gcount,
@@ -540,7 +621,7 @@ void prescanSum_gpu(
 	if(localID == 0)
 		psum[groupID] = lsum;
 }
-
+*/
 
 /*---------------------------------------------------------
                       radixCounting_gpu
@@ -597,7 +678,7 @@ void radixCounting_gpu(
 	gcount[(4*localID+3) * numGroups + groupID] = sum4.w;
 }
 
-
+/*
 __kernel __attribute__((reqd_work_group_size(LOCAL_WORK, 1, 1)))
 void radixCounting_gpu_atomic(
 	__global uint const * restrict a,
@@ -638,7 +719,7 @@ void radixCounting_gpu_atomic(
 	gcount[(4*localID+2) * numGroups + groupID] = sum4.z;
 	gcount[(4*localID+3) * numGroups + groupID] = sum4.w;
 }
-
+*/
 
 /*---------------------------------------------------------
                         radixPermute_gpu
