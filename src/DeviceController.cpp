@@ -314,6 +314,14 @@ namespace tbt
 	}
 
 
+	size_t DeviceController::getWGSizeMultiple1D(const cl::Kernel &kernel)
+	{
+		cl::size_t<3> wfs;
+		kernel.getWorkGroupInfo(m_device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, &wfs);
+		return wfs[0];
+	}
+
+
 	void DeviceController::enqueue1DRangeKernel(
 		const cl::Kernel &kernel,
 		size_t globalWork,

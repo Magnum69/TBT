@@ -396,6 +396,8 @@ namespace tbt
 		 */
 		std::string getDriverVersion() const;
 
+
+		size_t getWGSizeMultiple1D(const cl::Kernel &kernel);
 		//@}
 
 
