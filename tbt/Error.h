@@ -9,7 +9,7 @@
 namespace tbt
 {
 	//! Errors that are thrown as exceptions by tbt.
-	class Error : public std::exception
+	class Error
 	{
 	public:
 		//! The code of an error.
@@ -26,19 +26,23 @@ namespace tbt
 		};
 
 		//! Constructs an unknown error.
-		Error() : std::exception(), m_code(ecUnknown) { }
-
-		//! Constructs an errors with message \a msg and unknown error code.
-		Error(const char *msg) : std::exception(msg), m_code(ecUnknown) { }
+		Error() : m_code(ecUnknown) { }
 
 		//! Constructs an error with message \a msg and error code \a code.
-		Error(const char *msg, ErrorCode code) : std::exception(msg), m_code(code) { }
+		explicit Error(const std::string &msg, ErrorCode code = ecUnknown) : m_what(msg), m_code(code) { }
+
+		//! Constructs an error with message \a msg and error code \a code.
+		explicit Error(const char *msg, ErrorCode code = ecUnknown) : m_what(msg), m_code(code) { }
 
 		//! Returns the error code.
 		ErrorCode code() const { return m_code; }
 
+		//! Returns the error message.
+		std::string what() const { return m_what; }
+
 	private:
-		ErrorCode m_code; //!< the error code.
+		ErrorCode   m_code; //!< the error code.
+		std::string m_what; //!< the error message.
 	};
 }
 
